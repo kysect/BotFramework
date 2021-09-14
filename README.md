@@ -63,12 +63,9 @@ public class PingCommand : IBotAsyncCommand
             "Ping",
             "Answer pong on ping message");
 
-        public Result CanExecute(CommandArgumentContainer args)
-        {
-            return Result.Ok();
-        }
+        public Result CanExecute(CommandContainer args) => Result.Ok();
 
-        public Task<Result<IBotMessage>> Execute(CommandArgumentContainer args)
+        public Task<Result<IBotMessage>> Execute(CommandContainer args)
         {
             IBotMessage message = new BotTextMessage("Pong!");
             return Task.FromResult(Result.Ok(message));
