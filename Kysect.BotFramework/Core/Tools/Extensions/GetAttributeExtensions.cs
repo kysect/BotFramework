@@ -1,0 +1,11 @@
+﻿using System;
+using Kysect.BotFramework.Core.Commands;
+
+namespace Kysect.BotFramework.Core.Tools.Extensions
+{
+    public static class GetAttributeExtensions
+    {
+        public static BotCommandDescriptorAttribute GetBotCommandDescriptorAttribute(this Type t)
+            => Attribute.GetCustomAttribute(t, typeof(BotCommandDescriptorAttribute)) as BotCommandDescriptorAttribute;
+    }
+}

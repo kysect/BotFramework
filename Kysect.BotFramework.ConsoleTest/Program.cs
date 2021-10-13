@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
 using Kysect.BotFramework.ApiProviders.Telegram;
-using Kysect.BotFramework.Commands;
 using Kysect.BotFramework.Core;
+using Kysect.BotFramework.DefaultCommands;
 using Kysect.BotFramework.Settings;
 
 namespace Kysect.BotFramework.ConsoleTest
@@ -10,16 +10,16 @@ namespace Kysect.BotFramework.ConsoleTest
     {
         private static async Task MainAsync()
         {
-            var telegramToken = "1484135943:AAGM6JHSj-ER8ekwHQbaJPxHDxfCEz1hSHM";
+            var telegramToken = "***token***";
 
             var settings = new ConstSettingsProvider<TelegramSettings>(new TelegramSettings(telegramToken));
             var api = new TelegramApiProvider(settings);
 
             BotManager botManager = new BotManagerBuilder()
-                .SetPrefix('!')
-                .SetCaseSensitive(false)
-                .AddCommand(PingCommand.Descriptor)
-                .Build(api);
+                                    .SetPrefix('!')
+                                    .SetCaseSensitive(false)
+                                    .AddCommand<PingCommand>()
+                                    .Build(api);
 
             botManager.Start();
 
