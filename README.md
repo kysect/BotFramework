@@ -39,7 +39,7 @@ var settings = new ConfigSettingsProvider<TSettings>("filename");
 Вид JSON конфига для TelegramSettings
 ```json
 {
-    "AcessToken" : "token"
+    "AccessToken" : "token"
 }
 ```
 
