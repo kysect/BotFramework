@@ -11,7 +11,7 @@ namespace Kysect.BotFramework.Core.CommandInvoking
     {
         private readonly ServiceProvider _serviceProvider;
         //TODO: move to some kind of config/settings
-        private bool _caseSensetive;
+        private bool _caseSensitive;
 
         public CommandHandler(ServiceProvider serviceProvider)
         {
@@ -20,7 +20,7 @@ namespace Kysect.BotFramework.Core.CommandInvoking
 
         public Result CheckArgsCount(CommandContainer args)
         {
-            Result<BotCommandDescriptorAttribute> commandTask = _serviceProvider.GetCommandDescriptor(args.CommandName, _caseSensetive);
+            Result<BotCommandDescriptorAttribute> commandTask = _serviceProvider.GetCommandDescriptor(args.CommandName, _caseSensitive);
             if (commandTask.IsFailed)
             {
                 return commandTask.ToResult<CommandContainer>();
@@ -35,7 +35,7 @@ namespace Kysect.BotFramework.Core.CommandInvoking
 
         public Result CanCommandBeExecuted(CommandContainer args)
         {
-            Result<IBotCommand> commandTask = _serviceProvider.GetCommand(args.CommandName, _caseSensetive);
+            Result<IBotCommand> commandTask = _serviceProvider.GetCommand(args.CommandName, _caseSensitive);
             
             if (commandTask.IsFailed)
             {
@@ -54,13 +54,13 @@ namespace Kysect.BotFramework.Core.CommandInvoking
 
         public CommandHandler SetCaseSensitive(bool caseSensitive)
         {
-            _caseSensetive = caseSensitive;
+            _caseSensitive = caseSensitive;
             return this;
         }
 
         public Result<IBotMessage> ExecuteCommand(CommandContainer args)
         {
-            Result<IBotCommand> commandTask = _serviceProvider.GetCommand(args.CommandName, _caseSensetive);
+            Result<IBotCommand> commandTask = _serviceProvider.GetCommand(args.CommandName, _caseSensitive);
 
             if (!commandTask.IsSuccess)
             {
