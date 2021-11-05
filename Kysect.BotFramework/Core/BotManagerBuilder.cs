@@ -1,9 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Kysect.BotFramework.ApiProviders;
 using Kysect.BotFramework.Core.CommandInvoking;
 using Kysect.BotFramework.Core.Commands;
 using Kysect.BotFramework.Core.Exceptions;
-using Kysect.BotFramework.Core.Tools.Extensions;
 using Kysect.BotFramework.Core.Tools.Loggers;
 using Kysect.BotFramework.Data;
 using Microsoft.EntityFrameworkCore;
@@ -18,6 +18,10 @@ namespace Kysect.BotFramework.Core
 
         private char _prefix = '\0';
         private bool _sendErrorLogToUser;
+
+        private bool _dbContextInitialized = false;
+
+        //FK: we should make this private, shouldn't we?
         public ServiceCollection ServiceCollection { get; } = new ServiceCollection();
 
         public BotManagerBuilder AddLogger(ILogger logger)
@@ -63,12 +67,18 @@ namespace Kysect.BotFramework.Core
             return this;
         }
 
+        public BotManagerBuilder SetDatabaseOptions(Action<DbContextOptionsBuilder> optionsAction)
+        {
+            ServiceCollection.AddDbContext<BotFrameworkDbContext>(optionsAction);
+            _dbContextInitialized = true;
+            return this;
+        }
+
         public BotManager Build(IBotApiProvider apiProvider)
         {
-            ServiceCollection.AddDbContext<BotFrameworkDbContext>(o =>
-                                                                  {
-                                                                      o.UseSqlite("Filename=bf.db");
-                                                                  });
+            if (!_dbContextInitialized)
+                throw new BotValidException("Database context options was not initialized");
+
             ServiceProvider serviceProvider = ServiceCollection.BuildServiceProvider();
             var commandHandler = new CommandHandler(serviceProvider);
             commandHandler.SetCaseSensitive(_caseSensitive);
