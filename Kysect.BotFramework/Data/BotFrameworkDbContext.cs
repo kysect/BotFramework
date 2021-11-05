@@ -9,7 +9,7 @@ namespace Kysect.BotFramework.Data
         public DbSet<DiscordSenderInfoEntity> DiscordSenderInfos { get; set; }
         public DbSet<TelegramSenderInfoEntity> TelegramSenderInfos { get; set; }
         
-        public BotFrameworkDbContext(DbContextOptions options) : base(options)
+        public BotFrameworkDbContext(DbContextOptions<BotFrameworkDbContext> options) : base(options)
         {
             Database.EnsureCreated();
         }
