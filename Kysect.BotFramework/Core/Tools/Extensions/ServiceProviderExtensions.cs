@@ -46,7 +46,7 @@ namespace Kysect.BotFramework.Core.Tools.Extensions
             if (resultCommand.IsFailed)
                 return Result.Fail(resultCommand.ToString());
 
-            return Result.Ok(resultCommand.Value.GetType().GetBotCommandDescriptorAttribute());
+            return Result.Ok(resultCommand.Value.GetBotCommandDescriptorAttribute());
         }
     }
 }

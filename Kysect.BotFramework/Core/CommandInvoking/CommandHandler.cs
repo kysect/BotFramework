@@ -43,7 +43,7 @@ namespace Kysect.BotFramework.Core.CommandInvoking
             }
 
             IBotCommand command = commandTask.Value;
-            var descriptor = command.GetType().GetBotCommandDescriptorAttribute();
+            var descriptor = command.GetBotCommandDescriptorAttribute();
             Result canExecute = command.CanExecute(args);
 
             return canExecute.IsSuccess
