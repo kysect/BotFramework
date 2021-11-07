@@ -15,6 +15,7 @@ namespace Kysect.BotFramework.Core.Tools.Extensions
                 t => t.GetCustomAttribute<BotCommandDescriptorAttribute>());
 
         public static BotCommandDescriptorAttribute GetBotCommandDescriptorAttribute<T>(this T command)
+            where T : IBotCommand
             => typeof(T).GetBotCommandDescriptorAttribute();
     }
 }
