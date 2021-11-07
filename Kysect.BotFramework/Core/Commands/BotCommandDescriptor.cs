@@ -9,18 +9,11 @@ namespace Kysect.BotFramework.Core.Commands
         public string Description { get; }
         public string[] Args { get; }
 
-        public BotCommandDescriptorAttribute(string commandName, string description, string[] args)
+        public BotCommandDescriptorAttribute(string commandName, string description, params string[] args)
         {
             CommandName = commandName;
             Description = description;
             Args = args;
-        }
-
-        public BotCommandDescriptorAttribute(string commandName, string description)
-        {
-            CommandName = commandName;
-            Description = description;
-            Args = Array.Empty<string>();
         }
     }
 }

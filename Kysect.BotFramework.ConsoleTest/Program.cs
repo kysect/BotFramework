@@ -29,7 +29,7 @@ namespace Kysect.BotFramework.ConsoleTest
                 .SetDatabaseOptions(o => { o.UseSqlite("Filename=bf.db"); })
                 .SetPrefix('!')
                 .SetCaseSensitive(false)
-                .AddCommand(PingCommand.Descriptor)
+                .AddCommand<PingCommand>()
                 .Build(api);
 
             botManager.Start();
