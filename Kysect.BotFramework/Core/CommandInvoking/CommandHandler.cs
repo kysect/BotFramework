@@ -2,14 +2,16 @@ using System;
 using FluentResults;
 using Kysect.BotFramework.Core.BotMessages;
 using Kysect.BotFramework.Core.Commands;
+using Kysect.BotFramework.Core.Tools.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Kysect.BotFramework.Core.CommandInvoking
 {
     public class CommandHandler
     {
-        private readonly CommandHolder _commands = new CommandHolder();
         private readonly ServiceProvider _serviceProvider;
+        //TODO: move to some kind of config/settings
+        private bool _caseSensitive;
 
         public CommandHandler(ServiceProvider serviceProvider)
         {
@@ -18,7 +20,7 @@ namespace Kysect.BotFramework.Core.CommandInvoking
 
         public Result CheckArgsCount(CommandContainer args)
         {
-            Result<BotCommandDescriptor> commandTask = _commands.GetCommand(args.CommandName);
+            Result<BotCommandDescriptorAttribute> commandTask = _serviceProvider.GetCommandDescriptor(args.CommandName, _caseSensitive);
             if (commandTask.IsFailed)
             {
                 return commandTask.ToResult<CommandContainer>();
@@ -33,47 +35,42 @@ namespace Kysect.BotFramework.Core.CommandInvoking
 
         public Result CanCommandBeExecuted(CommandContainer args)
         {
-            Result<BotCommandDescriptor> commandTask = _commands.GetCommand(args.CommandName);
-
+            Result<IBotCommand> commandTask = _serviceProvider.GetCommand(args.CommandName, _caseSensitive);
+            
             if (commandTask.IsFailed)
             {
                 return commandTask.ToResult<CommandContainer>();
             }
 
-            IBotCommand command = commandTask.Value.ResolveCommand(_serviceProvider);
-
+            IBotCommand command = commandTask.Value;
+            var descriptor = command.GetBotCommandDescriptorAttribute();
             Result canExecute = command.CanExecute(args);
 
             return canExecute.IsSuccess
                 ? Result.Ok()
                 : Result.Fail<CommandContainer>(
-                    $"Command [{commandTask.Value.CommandName}] cannot be executed: {canExecute}");
+                    $"Command [{descriptor.CommandName}] cannot be executed: {canExecute}");
         }
 
         public CommandHandler SetCaseSensitive(bool caseSensitive)
         {
-            _commands.SetCaseSensitive(caseSensitive);
+            _caseSensitive = caseSensitive;
             return this;
-        }
-
-        public void RegisterCommand(BotCommandDescriptor descriptor)
-        {
-            _commands.AddCommand(descriptor);
         }
 
         public Result<IBotMessage> ExecuteCommand(CommandContainer args)
         {
-            Result<BotCommandDescriptor> commandDescriptor = _commands.GetCommand(args.CommandName);
+            Result<IBotCommand> commandTask = _serviceProvider.GetCommand(args.CommandName, _caseSensitive);
 
-            if (!commandDescriptor.IsSuccess)
+            if (!commandTask.IsSuccess)
             {
-                return commandDescriptor.ToResult<IBotMessage>();
+                return commandTask.ToResult<IBotMessage>();
             }
 
+            var command = commandTask.Value;
+            
             try
             {
-                IBotCommand command = commandDescriptor.Value.ResolveCommand(_serviceProvider);
-
                 return command switch
                 {
                     IBotAsyncCommand asyncCommand => asyncCommand.Execute(args).Result,
@@ -88,7 +85,5 @@ namespace Kysect.BotFramework.Core.CommandInvoking
                 return Result.Fail(new Error(errorMessage).CausedBy(e));
             }
         }
-
-        public CommandHolder GetCommands() => _commands;
     }
 }

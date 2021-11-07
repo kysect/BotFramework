@@ -118,8 +118,7 @@ namespace Kysect.BotFramework.ApiProviders.Discord
         {
             if (text.Length == 0)
             {
-                LoggerHolder.Instance.Error("The message wasn't sent by the command " +
-                                            $"\"{PingCommand.Descriptor.CommandName}\", the length must not be zero.");
+                LoggerHolder.Instance.Error("The message wasn't sent by the command, the length must not be zero.");
                 return Result.Ok();
             }
 
@@ -278,8 +277,7 @@ namespace Kysect.BotFramework.ApiProviders.Discord
             if (text.Length > 2000)
             {
                 string subString = text.Substring(0, 99) + "...";
-                string errorMessage = "The message wasn't sent by the command " +
-                                      $"\"{PingCommand.Descriptor.CommandName}\", the length is too big.";
+                string errorMessage = "The message wasn't sent by the command, the length is too big.";
                 return Result.Fail(new Error(errorMessage).CausedBy(subString));
             }
 

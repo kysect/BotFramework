@@ -4,6 +4,7 @@ using Kysect.BotFramework.ApiProviders;
 using Kysect.BotFramework.Core.CommandInvoking;
 using Kysect.BotFramework.Core.Commands;
 using Kysect.BotFramework.Core.Exceptions;
+using Kysect.BotFramework.Core.Tools.Extensions;
 using Kysect.BotFramework.Core.Tools.Loggers;
 using Kysect.BotFramework.Data;
 using Microsoft.EntityFrameworkCore;
@@ -14,7 +15,6 @@ namespace Kysect.BotFramework.Core
 {
     public class BotManagerBuilder
     {
-        private readonly List<BotCommandDescriptor> _commands = new List<BotCommandDescriptor>();
         private bool _caseSensitive = true;
 
         private char _prefix = '\0';
@@ -56,9 +56,12 @@ namespace Kysect.BotFramework.Core
             return this;
         }
 
-        public BotManagerBuilder AddCommand<T>(BotCommandDescriptor<T> descriptor) where T : class, IBotCommand
+        public BotManagerBuilder AddCommand<T>() where T : class, IBotCommand
         {
-            _commands.Add(descriptor);
+            var descriptor = typeof(T).GetBotCommandDescriptorAttribute();
+
+            if (descriptor is null)
+                throw new BotValidException("Command must have descriptor attribute");
             ServiceCollection.AddScoped<T>();
             LoggerHolder.Instance.Information($"New command added: {descriptor.CommandName}");
 
@@ -79,7 +82,6 @@ namespace Kysect.BotFramework.Core
 
             ServiceProvider serviceProvider = ServiceCollection.BuildServiceProvider();
             var commandHandler = new CommandHandler(serviceProvider);
-            _commands.ForEach(commandHandler.RegisterCommand);
             commandHandler.SetCaseSensitive(_caseSensitive);
             return new BotManager(apiProvider, commandHandler, _prefix, _sendErrorLogToUser, serviceProvider);
         }
