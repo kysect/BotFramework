@@ -75,12 +75,11 @@ namespace Kysect.BotFramework.Core
         {
             using (var scanner = ServiceCollection.UseAssemblyScanner(assembly))
             {
-                var query = scanner.EnqueueAdditionOfTypesThat()
-                                   .WouldBeRegisteredAsSelfType()
-                                   .WithScopedLifetime()
-                                   .MayBeAssignableTo<IBotCommand>();
-
-                query.HaveAttribute(typeof(BotCommandDescriptorAttribute));
+ 		scanner.EnqueueAdditionOfTypesThat()
+                    .WouldBeRegisteredAsSelfType()
+                    .WithScopedLifetime()
+                    .MayBeAssignableTo<IBotCommand>()
+                    .HaveAttribute<BotCommandDescriptorAttribute>();
             }
 
             return this;
