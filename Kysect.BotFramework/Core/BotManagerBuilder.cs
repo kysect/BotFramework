@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
+using FluentScanning;
+using FluentScanning.DependencyInjection;
 using Kysect.BotFramework.ApiProviders;
 using Kysect.BotFramework.Core.CommandInvoking;
 using Kysect.BotFramework.Core.Commands;
@@ -64,6 +67,21 @@ namespace Kysect.BotFramework.Core
                 throw new BotValidException("Command must have descriptor attribute");
             ServiceCollection.AddScoped<T>();
             LoggerHolder.Instance.Information($"New command added: {descriptor.CommandName}");
+
+            return this;
+        }
+
+        public BotManagerBuilder AddCommandsFromAssembly(Assembly assembly)
+        {
+            using (var scanner = ServiceCollection.UseAssemblyScanner(assembly))
+            {
+                var query = scanner.EnqueueAdditionOfTypesThat()
+                                   .WouldBeRegisteredAsSelfType()
+                                   .WithScopedLifetime()
+                                   .MayBeAssignableTo<IBotCommand>();
+
+                query.HaveAttribute(typeof(BotCommandDescriptorAttribute));
+            }
 
             return this;
         }
