@@ -1,21 +1,22 @@
-﻿using FluentResults;
-using Kysect.BotFramework.Core.Commands;
+﻿using Kysect.BotFramework.Core.Commands;
+using Kysect.BotFramework.Core.Exceptions;
+using Kysect.BotFramework.Core.Tools;
 
 namespace Kysect.BotFramework.Core.CommandInvoking
 {
     public class CommandParser : ICommandParser
     {
-        public Result<CommandContainer> ParseCommand(BotEventArgs botArguments)
+        public CommandContainer ParseCommand(BotEventArgs botArguments)
         {
             string commandName = botArguments.FindCommandName();
 
             if (string.IsNullOrWhiteSpace(commandName))
             {
-                return Result.Fail($"[{nameof(CommandParser)}]: Message do not contains command name.");
+                throw new CommandNotFoundException($"[{nameof(CommandParser)}]: Message do not contains command name.");
             }
 
-            return Result.Ok(new CommandContainer(commandName, botArguments.Context, botArguments.GetCommandArguments(),
-                                                  botArguments.GetMediaFiles()));
+            return new CommandContainer(commandName, botArguments.Context, botArguments.GetCommandArguments(),
+                                                  botArguments.GetMediaFiles());
         }
     }
 }

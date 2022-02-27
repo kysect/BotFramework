@@ -1,11 +1,11 @@
 ﻿using System.Threading.Tasks;
-using FluentResults;
 using Kysect.BotFramework.Core.BotMessages;
+using Kysect.BotFramework.Core.Tools;
 
 namespace Kysect.BotFramework.Core.Commands
 {
     public interface IBotAsyncCommand : IBotCommand
     {
-        Task<Result<IBotMessage>> Execute(CommandContainer args);
+        Task<IBotMessage> Execute(CommandContainer args);
     }
 }

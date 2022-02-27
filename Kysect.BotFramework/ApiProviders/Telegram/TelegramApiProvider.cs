@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using FluentResults;
 using Kysect.BotFramework.Core;
 using Kysect.BotFramework.Core.BotMedia;
 using Kysect.BotFramework.Core.BotMessages;
 using Kysect.BotFramework.Core.Contexts;
+using Kysect.BotFramework.Core.Tools;
 using Kysect.BotFramework.Core.Tools.Loggers;
 using Kysect.BotFramework.DefaultCommands;
 using Kysect.BotFramework.Settings;
@@ -106,13 +106,13 @@ namespace Kysect.BotFramework.ApiProviders.Telegram
             return chatMember.Status is ChatMemberStatus.Administrator or ChatMemberStatus.Creator;
         }
 
-        public Result<string> SendMultipleMedia(List<IBotMediaFile> mediaFiles, string text, SenderInfo sender)
+        public Result SendMultipleMedia(List<IBotMediaFile> mediaFiles, string text, SenderInfo sender)
         {
             var checkResult = CheckMediaFiles(mediaFiles);
             if (checkResult.IsFailed)
                 return checkResult;
 
-            Result<string> result = CheckText(text);
+            Result result = CheckText(text);
             if (result.IsFailed)
             {
                 return result;
@@ -131,7 +131,7 @@ namespace Kysect.BotFramework.ApiProviders.Telegram
                     stream.Close();
                 }
 
-                return Result.Ok("Message send");
+                return Result.Ok();
             }
             catch (Exception e)
             {
@@ -143,7 +143,7 @@ namespace Kysect.BotFramework.ApiProviders.Telegram
                 const string message = "Error while sending message";
                 LoggerHolder.Instance.Error(e, message);
 
-                return Result.Fail(new Error(message).CausedBy(e));
+                return Result.Fail(e.Message);
             }
         }
         
@@ -202,7 +202,7 @@ namespace Kysect.BotFramework.ApiProviders.Telegram
             return filesToSend;
         }
 
-        private Result<string> CheckMediaFiles(List<IBotMediaFile> mediaFiles)
+        private Result CheckMediaFiles(List<IBotMediaFile> mediaFiles)
         {
             //TODO: hack
             if (mediaFiles.Count <= 10)
@@ -216,9 +216,9 @@ namespace Kysect.BotFramework.ApiProviders.Telegram
 
         }
 
-        public Result<string> SendMedia(IBotMediaFile mediaFile, string text, SenderInfo sender)
+        public Result SendMedia(IBotMediaFile mediaFile, string text, SenderInfo sender)
         {
-            Result<string> result = CheckText(text);
+            Result result = CheckText(text);
             if (result.IsFailed)
             {
                 return result;
@@ -236,20 +236,20 @@ namespace Kysect.BotFramework.ApiProviders.Telegram
             {
                 task.Wait();
                 stream.Close();
-                return Result.Ok("Message send");
+                return Result.Ok();
             }
             catch (Exception e)
             {
                 const string message = "Error while sending message";
                 LoggerHolder.Instance.Error(e, message);
                 stream.Close();
-                return Result.Fail(new Error(message).CausedBy(e));
+                return Result.Fail(e.Message);
             }
         }
 
-        public Result<string> SendOnlineMedia(IBotOnlineFile file, string text, SenderInfo sender)
+        public Result SendOnlineMedia(IBotOnlineFile file, string text, SenderInfo sender)
         {
-            Result<string> result = CheckText(text);
+            Result result = CheckText(text);
             if (result.IsFailed)
             {
                 return result;
@@ -266,17 +266,17 @@ namespace Kysect.BotFramework.ApiProviders.Telegram
             try
             {
                 task.Wait();
-                return Result.Ok("Message sent.");
+                return Result.Ok();
             }
             catch (Exception e)
             {
                 const string message = "Error while sending message";
                 LoggerHolder.Instance.Error(e, message);
-                return Result.Fail(new Error(message).CausedBy(e));
+                return Result.Fail(e.Message);
             }
         }
 
-        public Result<string> SendTextMessage(string text, SenderInfo sender)
+        public Result SendTextMessage(string text, SenderInfo sender)
         {
             if (text.Length == 0)
             {
@@ -287,9 +287,9 @@ namespace Kysect.BotFramework.ApiProviders.Telegram
             return SendText(text, sender);
         }
 
-        private Result<string> SendText(string text, SenderInfo sender)
+        private Result SendText(string text, SenderInfo sender)
         {
-            Result<string> result = CheckText(text);
+            Result result = CheckText(text);
             if (result.IsFailed)
             {
                 return result;
@@ -300,23 +300,22 @@ namespace Kysect.BotFramework.ApiProviders.Telegram
             try
             {
                 task.Wait();
-                return Result.Ok("Message send");
+                return Result.Ok();
             }
             catch (Exception e)
             {
                 const string message = "Error while sending message";
                 LoggerHolder.Instance.Error(e, message);
-                return Result.Fail(new Error(message).CausedBy(e));
+                return Result.Fail(e.Message);
             }
         }
 
-        private Result<string> CheckText(string text)
+        private Result CheckText(string text)
         {
             if (text.Length > 4096)
             {
-                string subString = text.Substring(0, 99) + "...";
                 string errorMessage = "The message wasn't sent by the command, the length is too big.";
-                return Result.Fail(new Error(errorMessage).CausedBy(subString));
+                return Result.Fail(errorMessage);
             }
 
             return Result.Ok();
