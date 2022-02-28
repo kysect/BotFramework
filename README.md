@@ -65,10 +65,10 @@ public class PingCommand : IBotAsyncCommand
 
         public Result CanExecute(CommandContainer args) => Result.Ok();
 
-        public Task<Result<IBotMessage>> Execute(CommandContainer args)
+        public Task<IBotMessage> Execute(CommandContainer args)
         {
             IBotMessage message = new BotTextMessage("Pong!");
-            return Task.FromResult(Result.Ok(message));
+            return Task.FromResult(message);
         }
     }
 ```
