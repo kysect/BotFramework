@@ -9,14 +9,15 @@ namespace Kysect.BotFramework.Data.Entities
         public ContextType ContextType { get; set; }
         public long SenderInfoId { get; set; }
 
-        public static DialogContextEntity GetOrCreate(SenderInfoEntity senderInfoEntity,
+        public static DialogContextEntity GetOrCreate(
+            SenderInfoEntity senderInfoEntity,
             ContextType type,
             BotFrameworkDbContext dbContext)
         {
             DialogContextEntity contextModel = dbContext.DialogContexts.FirstOrDefault(
                 c => 
                     c.SenderInfoId == senderInfoEntity.Id 
-                    && c.ContextType == ContextType.Discord);
+                    && c.ContextType == type);
 
             if (contextModel is null)
             {

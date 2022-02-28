@@ -6,11 +6,11 @@ using Discord;
 using Discord.Commands;
 using Discord.Rest;
 using Discord.WebSocket;
-using FluentResults;
 using Kysect.BotFramework.Core;
 using Kysect.BotFramework.Core.BotMedia;
 using Kysect.BotFramework.Core.BotMessages;
 using Kysect.BotFramework.Core.Contexts;
+using Kysect.BotFramework.Core.Tools;
 using Kysect.BotFramework.Core.Tools.Loggers;
 using Kysect.BotFramework.DefaultCommands;
 using Kysect.BotFramework.Settings;
@@ -44,9 +44,9 @@ namespace Kysect.BotFramework.ApiProviders.Discord
             }
         }
 
-        public Result<string> SendMultipleMedia(List<IBotMediaFile> mediaFiles, string text, SenderInfo sender)
+        public Result SendMultipleMedia(List<IBotMediaFile> mediaFiles, string text, SenderInfo sender)
         {
-            Result<string> result;
+            Result result;
             if (mediaFiles.First() is IBotOnlineFile onlineFile)
             {
                 result = SendOnlineMedia(onlineFile, text, sender);
@@ -76,9 +76,9 @@ namespace Kysect.BotFramework.ApiProviders.Discord
             return result;
         }
 
-        public Result<string> SendMedia(IBotMediaFile mediaFile, string text, SenderInfo sender)
+        public Result SendMedia(IBotMediaFile mediaFile, string text, SenderInfo sender)
         {
-            Result<string> result = CheckText(text);
+            Result result = CheckText(text);
             if (result.IsFailed)
             {
                 return result;
@@ -90,21 +90,21 @@ namespace Kysect.BotFramework.ApiProviders.Discord
             try
             {
                 task.Wait();
-                return Result.Ok("Message send");
+                return Result.Ok();
             }
             catch (Exception e)
             {
                 const string message = "Error while sending message";
                 LoggerHolder.Instance.Error(e, message);
-                return Result.Fail(new Error(message).CausedBy(e));
+                return Result.Fail(e.Message);
             }
         }
 
-        public Result<string> SendOnlineMedia(IBotOnlineFile file, string text, SenderInfo sender)
+        public Result SendOnlineMedia(IBotOnlineFile file, string text, SenderInfo sender)
         {
             if (text.Length != 0)
             {
-                Result<string> result = SendText(text, sender);
+                Result result = SendText(text, sender);
                 if (result.IsFailed)
                 {
                     return result;
@@ -114,12 +114,11 @@ namespace Kysect.BotFramework.ApiProviders.Discord
             return SendText(file.Path, sender);
         }
 
-        public Result<string> SendTextMessage(string text, SenderInfo sender)
+        public Result SendTextMessage(string text, SenderInfo sender)
         {
             if (text.Length == 0)
             {
-                LoggerHolder.Instance.Error("The message wasn't sent by the command " +
-                                            $"\"{PingCommand.Descriptor.CommandName}\", the length must not be zero.");
+                LoggerHolder.Instance.Error("The message wasn't sent by the command, the length must not be zero.");
                 return Result.Ok();
             }
 
@@ -247,9 +246,9 @@ namespace Kysect.BotFramework.ApiProviders.Discord
             return socketGuildUser.GuildPermissions.Administrator;
         }
 
-        private Result<string> SendText(string text, SenderInfo sender)
+        private Result SendText(string text, SenderInfo sender)
         {
-            Result<string> result = CheckText(text);
+            Result result = CheckText(text);
             if (result.IsFailed)
             {
                 return result;
@@ -263,24 +262,22 @@ namespace Kysect.BotFramework.ApiProviders.Discord
             try
             {
                 task.Wait();
-                return Result.Ok("Message send");
+                return Result.Ok();
             }
             catch (Exception e)
             {
                 var message = "Error while sending message";
                 LoggerHolder.Instance.Error(e, message);
-                return Result.Fail(new Error(message).CausedBy(e));
+                return Result.Fail(e.Message);
             }
         }
 
-        private Result<string> CheckText(string text)
+        private Result CheckText(string text)
         {
             if (text.Length > 2000)
             {
-                string subString = text.Substring(0, 99) + "...";
-                string errorMessage = "The message wasn't sent by the command " +
-                                      $"\"{PingCommand.Descriptor.CommandName}\", the length is too big.";
-                return Result.Fail(new Error(errorMessage).CausedBy(subString));
+                string errorMessage = "The message wasn't sent by the command, the length is too big.";
+                return Result.Fail(errorMessage);
             }
 
             return Result.Ok();

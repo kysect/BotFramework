@@ -1,15 +1,18 @@
 using System;
-using FluentResults;
 using Kysect.BotFramework.Core.BotMessages;
 using Kysect.BotFramework.Core.Commands;
+using Kysect.BotFramework.Core.Tools;
+using Kysect.BotFramework.Core.Tools.Extensions;
+using Kysect.BotFramework.Core.Tools.Loggers;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Kysect.BotFramework.Core.CommandInvoking
 {
     public class CommandHandler
     {
-        private readonly CommandHolder _commands = new CommandHolder();
         private readonly ServiceProvider _serviceProvider;
+        //TODO: move to some kind of config/settings
+        private bool _caseSensitive;
 
         public CommandHandler(ServiceProvider serviceProvider)
         {
@@ -18,77 +21,51 @@ namespace Kysect.BotFramework.Core.CommandInvoking
 
         public Result CheckArgsCount(CommandContainer args)
         {
-            Result<BotCommandDescriptor> commandTask = _commands.GetCommand(args.CommandName);
-            if (commandTask.IsFailed)
-            {
-                return commandTask.ToResult<CommandContainer>();
-            }
+            var commandDescriptor = _serviceProvider.GetCommandDescriptor(args.CommandName, _caseSensitive);
 
-            return commandTask.Value.Args.Length == args.Arguments.Count
-                ? Result.Ok()
-                : Result.Fail<CommandContainer>(
-                    "Cannot execute command. Argument count miss matched with command signature");
+            return commandDescriptor.Args.Length == args.Arguments.Count
+                ? Result.Ok() 
+                : Result.Fail("Wrong arguments count");
         }
 
 
         public Result CanCommandBeExecuted(CommandContainer args)
         {
-            Result<BotCommandDescriptor> commandTask = _commands.GetCommand(args.CommandName);
-
-            if (commandTask.IsFailed)
-            {
-                return commandTask.ToResult<CommandContainer>();
-            }
-
-            IBotCommand command = commandTask.Value.ResolveCommand(_serviceProvider);
-
+            IBotCommand command = _serviceProvider.GetCommand(args.CommandName, _caseSensitive);
+            
+            var descriptor = command.GetBotCommandDescriptorAttribute();
             Result canExecute = command.CanExecute(args);
 
             return canExecute.IsSuccess
                 ? Result.Ok()
-                : Result.Fail<CommandContainer>(
-                    $"Command [{commandTask.Value.CommandName}] cannot be executed: {canExecute}");
+                : Result.Fail(
+                    $"Command [{descriptor.CommandName}] cannot be executed: {canExecute}");
         }
 
         public CommandHandler SetCaseSensitive(bool caseSensitive)
         {
-            _commands.SetCaseSensitive(caseSensitive);
+            _caseSensitive = caseSensitive;
             return this;
         }
 
-        public void RegisterCommand(BotCommandDescriptor descriptor)
+        public IBotMessage ExecuteCommand(CommandContainer args)
         {
-            _commands.AddCommand(descriptor);
-        }
-
-        public Result<IBotMessage> ExecuteCommand(CommandContainer args)
-        {
-            Result<BotCommandDescriptor> commandDescriptor = _commands.GetCommand(args.CommandName);
-
-            if (!commandDescriptor.IsSuccess)
-            {
-                return commandDescriptor.ToResult<IBotMessage>();
-            }
+            IBotCommand command = _serviceProvider.GetCommand(args.CommandName, _caseSensitive);
 
             try
             {
-                IBotCommand command = commandDescriptor.Value.ResolveCommand(_serviceProvider);
-
                 return command switch
                 {
                     IBotAsyncCommand asyncCommand => asyncCommand.Execute(args).Result,
                     IBotSyncCommand syncCommand => syncCommand.Execute(args),
-                    _ => Result.Fail(new Error("Command execution failed. Wrong command inheritance."))
+                    _ => throw new ArgumentOutOfRangeException(command.GetType().Name,"Command execution failed. Wrong command inheritance.")
                 };
             }
             catch (Exception e)
             {
-                var errorMessage =
-                    $"Command execution failed. Command: {args.CommandName}; arguments: {string.Join(", ", args.Arguments)}";
-                return Result.Fail(new Error(errorMessage).CausedBy(e));
+                LoggerHolder.Instance.Error("Command execution failed. Command: {args.CommandName}; arguments: {string.Join(", ", args.Arguments)}");
+                throw;
             }
         }
-
-        public CommandHolder GetCommands() => _commands;
     }
 }

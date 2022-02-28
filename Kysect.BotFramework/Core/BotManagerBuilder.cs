@@ -1,7 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Reflection;
+using FluentScanning;
+using FluentScanning.DependencyInjection;
 using Kysect.BotFramework.ApiProviders;
 using Kysect.BotFramework.Core.CommandInvoking;
 using Kysect.BotFramework.Core.Commands;
+using Kysect.BotFramework.Core.Exceptions;
+using Kysect.BotFramework.Core.Tools.Extensions;
 using Kysect.BotFramework.Core.Tools.Loggers;
 using Kysect.BotFramework.Data;
 using Microsoft.EntityFrameworkCore;
@@ -12,11 +18,14 @@ namespace Kysect.BotFramework.Core
 {
     public class BotManagerBuilder
     {
-        private readonly List<BotCommandDescriptor> _commands = new List<BotCommandDescriptor>();
         private bool _caseSensitive = true;
 
         private char _prefix = '\0';
         private bool _sendErrorLogToUser;
+
+        private bool _dbContextInitialized = false;
+
+        //FK: we should make this private, shouldn't we?
         public ServiceCollection ServiceCollection { get; } = new ServiceCollection();
 
         public BotManagerBuilder AddLogger(ILogger logger)
@@ -50,24 +59,46 @@ namespace Kysect.BotFramework.Core
             return this;
         }
 
-        public BotManagerBuilder AddCommand<T>(BotCommandDescriptor<T> descriptor) where T : class, IBotCommand
+        public BotManagerBuilder AddCommand<T>() where T : class, IBotCommand
         {
-            _commands.Add(descriptor);
+            var descriptor = typeof(T).GetBotCommandDescriptorAttribute();
+
+            if (descriptor is null)
+                throw new BotValidException("Command must have descriptor attribute");
             ServiceCollection.AddScoped<T>();
             LoggerHolder.Instance.Information($"New command added: {descriptor.CommandName}");
 
             return this;
         }
 
+        public BotManagerBuilder AddCommandsFromAssembly(Assembly assembly)
+        {
+            using (var scanner = ServiceCollection.UseAssemblyScanner(assembly))
+            {
+ 		scanner.EnqueueAdditionOfTypesThat()
+                    .WouldBeRegisteredAsSelfType()
+                    .WithScopedLifetime()
+                    .MayBeAssignableTo<IBotCommand>()
+                    .HaveAttribute<BotCommandDescriptorAttribute>();
+            }
+
+            return this;
+        }
+
+        public BotManagerBuilder SetDatabaseOptions(Action<DbContextOptionsBuilder> optionsAction)
+        {
+            ServiceCollection.AddDbContext<BotFrameworkDbContext>(optionsAction);
+            _dbContextInitialized = true;
+            return this;
+        }
+
         public BotManager Build(IBotApiProvider apiProvider)
         {
-            ServiceCollection.AddDbContext<BotFrameworkDbContext>(o =>
-                                                                  {
-                                                                      o.UseSqlite("Filename=bf.db");
-                                                                  });
+            if (!_dbContextInitialized)
+                throw new BotValidException("Database context options was not initialized");
+
             ServiceProvider serviceProvider = ServiceCollection.BuildServiceProvider();
             var commandHandler = new CommandHandler(serviceProvider);
-            _commands.ForEach(commandHandler.RegisterCommand);
             commandHandler.SetCaseSensitive(_caseSensitive);
             return new BotManager(apiProvider, commandHandler, _prefix, _sendErrorLogToUser, serviceProvider);
         }
