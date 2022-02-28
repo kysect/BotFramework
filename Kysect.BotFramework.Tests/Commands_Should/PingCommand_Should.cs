@@ -13,7 +13,7 @@ namespace Kysect.BotFramework.Tests.Commands_Should
         {
             var pingCommand = new PingCommand();
             var fakeContainer = A.Fake<CommandContainer>();
-            pingCommand.Execute(fakeContainer).Result.IsSuccess.Should().Be(true);
+            pingCommand.Execute(fakeContainer).Result.Text.Should().Be("Pong !");
         }
     }
 }

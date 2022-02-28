@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using FluentResults;
 using Kysect.BotFramework.Core.Commands;
+using Kysect.BotFramework.Core.Exceptions;
 using Kysect.BotFramework.Core.Tools.Helpers;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -46,25 +45,19 @@ namespace Kysect.BotFramework.Core.Tools.Extensions
             return null;
         }
 
-        public static Result<IBotCommand> GetCommand(this ServiceProvider provider, string commandName, bool caseSensitive)
+        public static IBotCommand GetCommand(this ServiceProvider provider, string commandName, bool caseSensitive)
         {
             var type = CommandsTypes.GetOrAdd(
                 commandName,
                 t => provider.GetCommandType(commandName, caseSensitive));
             
             if (type is null)
-                return Result.Fail("Couldn't find command with such name");
+                throw new CommandNotFoundException("Couldn't find command with such name");
             
-            return Result.Ok(provider.GetService(type) as IBotCommand);
+            return provider.GetService(type) as IBotCommand;
         }
         
-        public static Result<BotCommandDescriptorAttribute> GetCommandDescriptor(this ServiceProvider  provider, string commandName, bool caseSensitive)
-        {
-            var resultCommand = provider.GetCommand(commandName, caseSensitive);
-            if (resultCommand.IsFailed)
-                return Result.Fail(resultCommand.ToString());
-
-            return Result.Ok(resultCommand.Value.GetBotCommandDescriptorAttribute());
-        }
+        public static BotCommandDescriptorAttribute GetCommandDescriptor(this ServiceProvider  provider, string commandName, bool caseSensitive)
+            => provider.GetCommand(commandName, caseSensitive).GetBotCommandDescriptorAttribute();
     }
 }
