@@ -57,18 +57,15 @@ var settings = new ConstSettingsProvider<TSettings>(new TSettings(token));
 
 Пример команды Ping
 ```csharp
+[BotCommandDescriptor("ping", "Answer pong on ping message")]
 public class PingCommand : IBotAsyncCommand
     {
-        public static readonly BotCommandDescriptor<PingCommand> Descriptor = new BotCommandDescriptor<PingCommand>(
-            "Ping",
-            "Answer pong on ping message");
-
         public Result CanExecute(CommandContainer args) => Result.Ok();
 
-        public Task<Result<IBotMessage>> Execute(CommandContainer args)
+        public Task<IBotMessage> Execute(CommandContainer args)
         {
             IBotMessage message = new BotTextMessage("Pong!");
-            return Task.FromResult(Result.Ok(message));
+            return Task.FromResult(message);
         }
     }
 ```
