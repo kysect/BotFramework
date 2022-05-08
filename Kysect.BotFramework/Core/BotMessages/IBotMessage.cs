@@ -1,4 +1,5 @@
-﻿using Kysect.BotFramework.ApiProviders;
+﻿using System.Threading.Tasks;
+using Kysect.BotFramework.ApiProviders;
 using Kysect.BotFramework.Core.Contexts;
 
 namespace Kysect.BotFramework.Core.BotMessages
@@ -7,6 +8,6 @@ namespace Kysect.BotFramework.Core.BotMessages
     {
         string Text { get; }
 
-        void Send(IBotApiProvider apiProvider, SenderInfo sender);
+        Task SendAsync(IBotApiProvider apiProvider, SenderInfo sender);
     }
 }

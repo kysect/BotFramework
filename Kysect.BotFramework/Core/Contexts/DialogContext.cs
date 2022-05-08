@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using System.Threading.Tasks;
 using Kysect.BotFramework.Data;
 using Kysect.BotFramework.Data.Entities;
 
@@ -19,12 +20,12 @@ namespace Kysect.BotFramework.Core.Contexts
             SenderInfo = senderInfo;
         }
 
-        internal void SaveChanges(BotFrameworkDbContext dbContext)
+        internal async  Task SaveChangesAsync(BotFrameworkDbContext dbContext)
         {
             DialogContextEntity context = dbContext.DialogContexts.FirstOrDefault(x => x.SenderInfoId == _senderInfoId && x.ContextType == _contextType);
             context.State = State;
             dbContext.DialogContexts.Update(context);
-            dbContext.SaveChanges();
+            await dbContext.SaveChangesAsync();
         }
     }
 }
