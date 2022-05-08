@@ -17,7 +17,7 @@ using Kysect.BotFramework.Settings;
 
 namespace Kysect.BotFramework.ApiProviders.Discord
 {
-    public class DiscordApiProvider : IBotApiProvider, IDisposable
+    public partial class DiscordApiProvider : IBotApiProvider, IDisposable
     {
         private readonly object _lock = new object();
         private readonly DiscordSettings _settings;
@@ -43,87 +43,7 @@ namespace Kysect.BotFramework.ApiProviders.Discord
                 Initialize();
             }
         }
-
-        public async Task<Result> SendMultipleMediaAsync(List<IBotMediaFile> mediaFiles, string text, SenderInfo sender)
-        {
-            Result result;
-            if (mediaFiles.First() is IBotOnlineFile onlineFile)
-            {
-                result = await SendOnlineMediaAsync(onlineFile, text, sender);
-            }
-            else
-            {
-                result = await SendMediaAsync(mediaFiles.First(), text, sender);
-            }
-            
-            foreach (IBotMediaFile media in mediaFiles.Skip(1))
-            {
-                if (result.IsFailed)
-                {
-                    return result;
-                }
-
-                if (media is IBotOnlineFile onlineMediaFile)
-                {
-                    result = await SendOnlineMediaAsync(onlineMediaFile, string.Empty, sender);
-                }
-                else
-                {
-                    result = await SendMediaAsync(media, string.Empty, sender);
-                }
-            }
-
-            return result;
-        }
-
-        public async Task<Result> SendMediaAsync(IBotMediaFile mediaFile, string text, SenderInfo sender)
-        {
-            Result result = CheckText(text);
-            if (result.IsFailed)
-            {
-                return result;
-            }
-            
-            try
-            {
-                RestUserMessage message = await _client.GetGuild((ulong) sender.ChatId)
-                    .GetTextChannel((ulong) sender.UserSenderId)
-                    .SendFileAsync(mediaFile.Path, text);
-                return Result.Ok();
-            }
-            catch (Exception e)
-            {
-                const string message = "Error while sending message";
-                LoggerHolder.Instance.Error(e, message);
-                return Result.Fail(e.Message);
-            }
-        }
-
-        public async Task<Result> SendOnlineMediaAsync(IBotOnlineFile file, string text, SenderInfo sender)
-        {
-            if (text.Length != 0)
-            {
-                Result result = await SendTextAsync(text, sender);
-                if (result.IsFailed)
-                {
-                    return result;
-                }
-            }
-
-            return await SendTextAsync(file.Path, sender);
-        }
-
-        public async Task<Result> SendTextMessageAsync(string text, SenderInfo sender)
-        {
-            if (text.Length == 0)
-            {
-                LoggerHolder.Instance.Error("The message wasn't sent by the command, the length must not be zero.");
-                return Result.Ok();
-            }
-
-            return await SendTextAsync(text, sender);
-        }
-
+        
         public void Dispose()
         {
             _client.MessageReceived -= ClientOnMessage;
@@ -243,42 +163,6 @@ namespace Kysect.BotFramework.ApiProviders.Discord
         {
             var socketGuildUser = user as SocketGuildUser;
             return socketGuildUser.GuildPermissions.Administrator;
-        }
-
-        private async Task<Result> SendTextAsync(string text, SenderInfo sender)
-        {
-            Result result = CheckText(text);
-            if (result.IsFailed)
-            {
-                return result;
-            }
-
-            var discordSender = (DiscordSenderInfo)sender;
-    
-            try
-            {
-                RestUserMessage message = await _client.GetGuild(discordSender.GuildId)
-                    .GetTextChannel((ulong) sender.ChatId)
-                    .SendMessageAsync(text);
-                return Result.Ok();
-            }
-            catch (Exception e)
-            {
-                var message = "Error while sending message";
-                LoggerHolder.Instance.Error(e, message);
-                return Result.Fail(e.Message);
-            }
-        }
-
-        private Result CheckText(string text)
-        {
-            if (text.Length > 2000)
-            {
-                string errorMessage = "The message wasn't sent by the command, the length is too big.";
-                return Result.Fail(errorMessage);
-            }
-
-            return Result.Ok();
         }
     }
 }
