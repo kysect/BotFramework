@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Kysect.BotFramework.ApiProviders;
 using Kysect.BotFramework.Core.BotMessages;
 using Kysect.BotFramework.Core.CommandInvoking;
@@ -44,13 +45,20 @@ namespace Kysect.BotFramework.Core
 
         private void ApiProviderOnMessage(object sender, BotNewMessageEventArgs e)
         {
+#pragma warning disable CS4014
+            RunCommandProcessing(e);
+#pragma warning restore CS4014
+        }
+
+        private async Task RunCommandProcessing(BotNewMessageEventArgs e)
+        {
             try
             {
-                ProcessMessage(e);
+                await ProcessMessage(e);
             }
             catch (BotException exception)
             {
-                HandlerError(exception, e);
+                await HandlerError(exception, e);
             }
             catch (Exception exception)
             {
@@ -61,7 +69,7 @@ namespace Kysect.BotFramework.Core
             }
         }
 
-        private void ProcessMessage(BotNewMessageEventArgs e)
+        private async Task ProcessMessage(BotNewMessageEventArgs e)
         {
             var dbContext =  _serviceProvider.GetRequiredService<BotFrameworkDbContext>();
             DialogContext context = e.SenderInfo.GetOrCreateDialogContext(dbContext);
@@ -88,28 +96,28 @@ namespace Kysect.BotFramework.Core
                 throw new CommandCantBeExecutedException(checkResult.Message);
             }
 
-            IBotMessage message = _commandHandler.ExecuteCommand(commandContainer);
+            IBotMessage message = await _commandHandler.ExecuteCommand(commandContainer);
 
-            commandContainer.Context.SaveChanges(dbContext);
+            await commandContainer.Context.SaveChangesAsync(dbContext);
             
             SenderInfo sender = commandContainer.Context.SenderInfo;
 
-            message.Send(_apiProvider, sender);
+            await message.SendAsync(_apiProvider, sender);
         }
 
-        private void HandlerError(BotException exception, BotNewMessageEventArgs botEventArgs)
+        private async Task HandlerError(BotException exception, BotNewMessageEventArgs botEventArgs)
         {
             LoggerHolder.Instance.Error(exception.Message);
 
             if (_sendErrorLogToUser)
             {
                 var errorLogMessage = new BotTextMessage(exception.Message);
-                errorLogMessage.Send(_apiProvider, botEventArgs.SenderInfo);
+                await errorLogMessage.SendAsync(_apiProvider, botEventArgs.SenderInfo);
             }
             else
             {
                 var errorMessage = new BotTextMessage("Something went wrong.");
-                errorMessage.Send(_apiProvider, botEventArgs.SenderInfo);
+                await errorMessage.SendAsync(_apiProvider, botEventArgs.SenderInfo);
             }
         }
     }

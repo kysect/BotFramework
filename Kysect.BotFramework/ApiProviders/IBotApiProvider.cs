@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Kysect.BotFramework.Core;
 using Kysect.BotFramework.Core.BotMedia;
 using Kysect.BotFramework.Core.Contexts;
@@ -12,9 +13,9 @@ namespace Kysect.BotFramework.ApiProviders
         event EventHandler<BotNewMessageEventArgs> OnMessage;
 
         void Restart();
-        Result SendMultipleMedia(List<IBotMediaFile> mediaFiles, string text, SenderInfo sender);
-        Result SendMedia(IBotMediaFile mediaFile, string text, SenderInfo sender);
-        Result SendOnlineMedia(IBotOnlineFile file, string text, SenderInfo sender);
-        Result SendTextMessage(string text, SenderInfo sender);
+        Task<Result> SendMultipleMediaAsync(List<IBotMediaFile> mediaFiles, string text, SenderInfo sender);
+        Task<Result> SendMediaAsync(IBotMediaFile mediaFile, string text, SenderInfo sender);
+        Task<Result> SendOnlineMediaAsync(IBotOnlineFile file, string text, SenderInfo sender);
+        Task<Result> SendTextMessageAsync(string text, SenderInfo sender);
     }
 }

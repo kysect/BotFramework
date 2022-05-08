@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Kysect.BotFramework.Core.BotMessages;
 using Kysect.BotFramework.Core.Commands;
 using Kysect.BotFramework.Core.Tools;
@@ -48,18 +49,13 @@ namespace Kysect.BotFramework.Core.CommandInvoking
             return this;
         }
 
-        public IBotMessage ExecuteCommand(CommandContainer args)
+        public async Task<IBotMessage> ExecuteCommand(CommandContainer args)
         {
             IBotCommand command = _serviceProvider.GetCommand(args.CommandName, _caseSensitive);
 
             try
             {
-                return command switch
-                {
-                    IBotAsyncCommand asyncCommand => asyncCommand.Execute(args).Result,
-                    IBotSyncCommand syncCommand => syncCommand.Execute(args),
-                    _ => throw new ArgumentOutOfRangeException(command.GetType().Name,"Command execution failed. Wrong command inheritance.")
-                };
+                return await command.Execute(args);
             }
             catch (Exception e)
             {

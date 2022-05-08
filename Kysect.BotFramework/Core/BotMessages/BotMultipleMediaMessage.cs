@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using Kysect.BotFramework.ApiProviders;
 using Kysect.BotFramework.Core.BotMedia;
 using Kysect.BotFramework.Core.Contexts;
@@ -17,9 +18,9 @@ namespace Kysect.BotFramework.Core.BotMessages
 
         public string Text { get; }
 
-        public void Send(IBotApiProvider apiProvider, SenderInfo sender)
+        public async Task SendAsync(IBotApiProvider apiProvider, SenderInfo sender)
         {
-            apiProvider.SendMultipleMedia(MediaFiles, Text, sender);
+            await apiProvider.SendMultipleMediaAsync(MediaFiles, Text, sender);
         }
     }
 }

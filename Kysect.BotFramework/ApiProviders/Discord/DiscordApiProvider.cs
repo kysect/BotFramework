@@ -44,16 +44,16 @@ namespace Kysect.BotFramework.ApiProviders.Discord
             }
         }
 
-        public Result SendMultipleMedia(List<IBotMediaFile> mediaFiles, string text, SenderInfo sender)
+        public async Task<Result> SendMultipleMediaAsync(List<IBotMediaFile> mediaFiles, string text, SenderInfo sender)
         {
             Result result;
             if (mediaFiles.First() is IBotOnlineFile onlineFile)
             {
-                result = SendOnlineMedia(onlineFile, text, sender);
+                result = await SendOnlineMediaAsync(onlineFile, text, sender);
             }
             else
             {
-                result = SendMedia(mediaFiles.First(), text, sender);
+                result = await SendMediaAsync(mediaFiles.First(), text, sender);
             }
             
             foreach (IBotMediaFile media in mediaFiles.Skip(1))
@@ -65,31 +65,30 @@ namespace Kysect.BotFramework.ApiProviders.Discord
 
                 if (media is IBotOnlineFile onlineMediaFile)
                 {
-                    result = SendOnlineMedia(onlineMediaFile, string.Empty, sender);
+                    result = await SendOnlineMediaAsync(onlineMediaFile, string.Empty, sender);
                 }
                 else
                 {
-                    result = SendMedia(media, string.Empty, sender);
+                    result = await SendMediaAsync(media, string.Empty, sender);
                 }
             }
 
             return result;
         }
 
-        public Result SendMedia(IBotMediaFile mediaFile, string text, SenderInfo sender)
+        public async Task<Result> SendMediaAsync(IBotMediaFile mediaFile, string text, SenderInfo sender)
         {
             Result result = CheckText(text);
             if (result.IsFailed)
             {
                 return result;
             }
-
-            Task<RestUserMessage> task = _client.GetGuild((ulong) sender.ChatId)
-                                                .GetTextChannel((ulong) sender.UserSenderId)
-                                                .SendFileAsync(mediaFile.Path, text);
+            
             try
             {
-                task.Wait();
+                RestUserMessage message = await _client.GetGuild((ulong) sender.ChatId)
+                    .GetTextChannel((ulong) sender.UserSenderId)
+                    .SendFileAsync(mediaFile.Path, text);
                 return Result.Ok();
             }
             catch (Exception e)
@@ -100,21 +99,21 @@ namespace Kysect.BotFramework.ApiProviders.Discord
             }
         }
 
-        public Result SendOnlineMedia(IBotOnlineFile file, string text, SenderInfo sender)
+        public async Task<Result> SendOnlineMediaAsync(IBotOnlineFile file, string text, SenderInfo sender)
         {
             if (text.Length != 0)
             {
-                Result result = SendText(text, sender);
+                Result result = await SendTextAsync(text, sender);
                 if (result.IsFailed)
                 {
                     return result;
                 }
             }
 
-            return SendText(file.Path, sender);
+            return await SendTextAsync(file.Path, sender);
         }
 
-        public Result SendTextMessage(string text, SenderInfo sender)
+        public async Task<Result> SendTextMessageAsync(string text, SenderInfo sender)
         {
             if (text.Length == 0)
             {
@@ -122,7 +121,7 @@ namespace Kysect.BotFramework.ApiProviders.Discord
                 return Result.Ok();
             }
 
-            return SendText(text, sender);
+            return await SendTextAsync(text, sender);
         }
 
         public void Dispose()
@@ -246,7 +245,7 @@ namespace Kysect.BotFramework.ApiProviders.Discord
             return socketGuildUser.GuildPermissions.Administrator;
         }
 
-        private Result SendText(string text, SenderInfo sender)
+        private async Task<Result> SendTextAsync(string text, SenderInfo sender)
         {
             Result result = CheckText(text);
             if (result.IsFailed)
@@ -255,13 +254,12 @@ namespace Kysect.BotFramework.ApiProviders.Discord
             }
 
             var discordSender = (DiscordSenderInfo)sender;
-            Task<RestUserMessage> task = _client.GetGuild(discordSender.GuildId)
-                                                .GetTextChannel((ulong) sender.ChatId)
-                                                .SendMessageAsync(text);
-
+    
             try
             {
-                task.Wait();
+                RestUserMessage message = await _client.GetGuild(discordSender.GuildId)
+                    .GetTextChannel((ulong) sender.ChatId)
+                    .SendMessageAsync(text);
                 return Result.Ok();
             }
             catch (Exception e)
