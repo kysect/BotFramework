@@ -13,36 +13,36 @@ namespace Kysect.BotFramework.ApiProviders.Discord;
 public partial class DiscordApiProvider : IBotApiProvider, IDisposable
 {
     public async Task<Result> SendMultipleMediaAsync(List<IBotMediaFile> mediaFiles, string text, SenderInfo sender)
+    {
+        Result result;
+        if (mediaFiles.First() is IBotOnlineFile onlineFile)
         {
-            Result result;
-            if (mediaFiles.First() is IBotOnlineFile onlineFile)
+            result = await SendOnlineMediaAsync(onlineFile, text, sender);
+        }
+        else
+        {
+            result = await SendMediaAsync(mediaFiles.First(), text, sender);
+        }
+        
+        foreach (IBotMediaFile media in mediaFiles.Skip(1))
+        {
+            if (result.IsFailed)
             {
-                result = await SendOnlineMediaAsync(onlineFile, text, sender);
+                return result;
+            }
+
+            if (media is IBotOnlineFile onlineMediaFile)
+            {
+                result = await SendOnlineMediaAsync(onlineMediaFile, string.Empty, sender);
             }
             else
             {
-                result = await SendMediaAsync(mediaFiles.First(), text, sender);
+                result = await SendMediaAsync(media, string.Empty, sender);
             }
-            
-            foreach (IBotMediaFile media in mediaFiles.Skip(1))
-            {
-                if (result.IsFailed)
-                {
-                    return result;
-                }
-
-                if (media is IBotOnlineFile onlineMediaFile)
-                {
-                    result = await SendOnlineMediaAsync(onlineMediaFile, string.Empty, sender);
-                }
-                else
-                {
-                    result = await SendMediaAsync(media, string.Empty, sender);
-                }
-            }
-
-            return result;
         }
+
+        return result;
+    }
 
     public async Task<Result> SendMediaAsync(IBotMediaFile mediaFile, string text, SenderInfo sender)
     {
