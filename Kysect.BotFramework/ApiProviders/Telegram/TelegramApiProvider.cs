@@ -106,7 +106,7 @@ namespace Kysect.BotFramework.ApiProviders.Telegram
             return chatMember.Status is ChatMemberStatus.Administrator or ChatMemberStatus.Creator;
         }
 
-        public Result SendMultipleMedia(List<IBotMediaFile> mediaFiles, string text, SenderInfo sender)
+        public async Task<Result> SendMultipleMediaAsync(List<IBotMediaFile> mediaFiles, string text, SenderInfo sender)
         {
             var checkResult = CheckMediaFiles(mediaFiles);
             if (checkResult.IsFailed)
@@ -121,29 +121,25 @@ namespace Kysect.BotFramework.ApiProviders.Telegram
             List<FileStream> streams = new List<FileStream>();
             List<IAlbumInputMedia> filesToSend = CollectInputMedia(mediaFiles, text, streams);
 
-            Task<Message[]> task = _client.SendMediaGroupAsync(filesToSend, sender.ChatId);
-
             try
             {
-                task.Wait();
-                foreach (FileStream stream in streams)
-                {
-                    stream.Close();
-                }
+                Message[] task = await _client.SendMediaGroupAsync(filesToSend, sender.ChatId);
 
                 return Result.Ok();
             }
             catch (Exception e)
             {
-                foreach (FileStream stream in streams)
-                {
-                    stream.Close();
-                }
-                
                 const string message = "Error while sending message";
                 LoggerHolder.Instance.Error(e, message);
 
                 return Result.Fail(e.Message);
+            }
+            finally
+            {
+                foreach (FileStream stream in streams)
+                {
+                    stream.Close();
+                }
             }
         }
         
@@ -216,7 +212,7 @@ namespace Kysect.BotFramework.ApiProviders.Telegram
 
         }
 
-        public Result SendMedia(IBotMediaFile mediaFile, string text, SenderInfo sender)
+        public async Task<Result> SendMediaAsync(IBotMediaFile mediaFile, string text, SenderInfo sender)
         {
             Result result = CheckText(text);
             if (result.IsFailed)
@@ -226,28 +222,30 @@ namespace Kysect.BotFramework.ApiProviders.Telegram
 
             FileStream stream = File.Open(mediaFile.Path, FileMode.Open);
             var fileToSend = new InputMedia(stream, mediaFile.Path.Split(Path.DirectorySeparatorChar).Last());
-            Task<Message> task = mediaFile.MediaType switch
-            {
-                MediaTypeEnum.Photo => _client.SendPhotoAsync(sender.ChatId, fileToSend, text),
-                MediaTypeEnum.Video => _client.SendVideoAsync(sender.ChatId, fileToSend, caption: text)
-            };
+            
 
             try
             {
-                task.Wait();
-                stream.Close();
+                Message message = mediaFile.MediaType switch
+                {
+                    MediaTypeEnum.Photo => await _client.SendPhotoAsync(sender.ChatId, fileToSend, text),
+                    MediaTypeEnum.Video => await _client.SendVideoAsync(sender.ChatId, fileToSend, caption: text)
+                };
                 return Result.Ok();
             }
             catch (Exception e)
             {
                 const string message = "Error while sending message";
                 LoggerHolder.Instance.Error(e, message);
-                stream.Close();
                 return Result.Fail(e.Message);
+            }
+            finally
+            {
+                stream.Close();
             }
         }
 
-        public Result SendOnlineMedia(IBotOnlineFile file, string text, SenderInfo sender)
+        public async Task<Result> SendOnlineMediaAsync(IBotOnlineFile file, string text, SenderInfo sender)
         {
             Result result = CheckText(text);
             if (result.IsFailed)
@@ -256,16 +254,14 @@ namespace Kysect.BotFramework.ApiProviders.Telegram
             }
 
             string fileIdentifier = file.Id ?? file.Path;
-
-            Task<Message> task = file.MediaType switch
-            {
-                MediaTypeEnum.Photo => _client.SendPhotoAsync(sender.ChatId, fileIdentifier, text),
-                MediaTypeEnum.Video => _client.SendVideoAsync(sender.ChatId, fileIdentifier, caption: text)
-            };
-
+            
             try
             {
-                task.Wait();
+                Message msg = file.MediaType switch
+                {
+                    MediaTypeEnum.Photo => await _client.SendPhotoAsync(sender.ChatId, fileIdentifier, text),
+                    MediaTypeEnum.Video => await _client.SendVideoAsync(sender.ChatId, fileIdentifier, caption: text)
+                };
                 return Result.Ok();
             }
             catch (Exception e)
@@ -276,7 +272,7 @@ namespace Kysect.BotFramework.ApiProviders.Telegram
             }
         }
 
-        public Result SendTextMessage(string text, SenderInfo sender)
+        public async Task<Result> SendTextMessageAsync(string text, SenderInfo sender)
         {
             if (text.Length == 0)
             {
@@ -284,22 +280,20 @@ namespace Kysect.BotFramework.ApiProviders.Telegram
                 return Result.Ok();
             }
 
-            return SendText(text, sender);
+            return await SendText(text, sender);
         }
 
-        private Result SendText(string text, SenderInfo sender)
+        private async Task<Result> SendText(string text, SenderInfo sender)
         {
             Result result = CheckText(text);
             if (result.IsFailed)
             {
                 return result;
             }
-
-            Task<Message> task = _client.SendTextMessageAsync(sender.ChatId, text);
-
+            
             try
             {
-                task.Wait();
+                Message message = await _client.SendTextMessageAsync(sender.ChatId, text);
                 return Result.Ok();
             }
             catch (Exception e)
