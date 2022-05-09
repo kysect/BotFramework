@@ -25,7 +25,7 @@ public partial class DiscordApiProvider
         var discordSender = (DiscordSenderInfo)sender;
     
         try
-        { 
+        {
             await _client.GetGuild(discordSender.GuildId)
                 .GetTextChannel((ulong) sender.ChatId)
                 .SendMessageAsync(text);
