@@ -103,7 +103,8 @@ public partial class TelegramApiProvider
 
     public async Task<Result> SendMediaAsync(IBotMediaFile mediaFile, string text, SenderInfo sender)
     {
-        if (mediaFile is IBotOnlineFile onlineFile) return await SendOnlineMediaAsync(onlineFile, text, sender);
+        if (mediaFile is IBotOnlineFile onlineFile) 
+            return await SendOnlineMediaAsync(onlineFile, text, sender);
         
         Result result = CheckText(text);
         if (result.IsFailed)
