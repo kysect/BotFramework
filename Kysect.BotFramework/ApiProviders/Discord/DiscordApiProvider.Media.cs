@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Discord.Rest;
 using Kysect.BotFramework.Core.BotMedia;
 using Kysect.BotFramework.Core.Contexts;
 using Kysect.BotFramework.Core.Tools;
@@ -10,35 +9,20 @@ using Kysect.BotFramework.Core.Tools.Loggers;
 
 namespace Kysect.BotFramework.ApiProviders.Discord;
 
-public partial class DiscordApiProvider : IBotApiProvider, IDisposable
+public partial class DiscordApiProvider
 {
     public async Task<Result> SendMultipleMediaAsync(List<IBotMediaFile> mediaFiles, string text, SenderInfo sender)
     {
-        Result result;
-        if (mediaFiles.First() is IBotOnlineFile onlineFile)
-        {
-            result = await SendOnlineMediaAsync(onlineFile, text, sender);
-        }
-        else
-        {
-            result = await SendMediaAsync(mediaFiles.First(), text, sender);
-        }
-        
-        foreach (IBotMediaFile media in mediaFiles.Skip(1))
+        var result = await SendMediaAsync(mediaFiles.First(), text, sender);
+
+        foreach (var media in mediaFiles.Skip(1))
         {
             if (result.IsFailed)
             {
                 return result;
             }
 
-            if (media is IBotOnlineFile onlineMediaFile)
-            {
-                result = await SendOnlineMediaAsync(onlineMediaFile, string.Empty, sender);
-            }
-            else
-            {
-                result = await SendMediaAsync(media, string.Empty, sender);
-            }
+            result = await SendMediaAsync(media, string.Empty, sender);
         }
 
         return result;
@@ -46,6 +30,9 @@ public partial class DiscordApiProvider : IBotApiProvider, IDisposable
 
     public async Task<Result> SendMediaAsync(IBotMediaFile mediaFile, string text, SenderInfo sender)
     {
+        if (mediaFile is IBotOnlineFile onlineFile)
+            return await SendOnlineMediaAsync(onlineFile, text, sender);
+        
         Result result = CheckText(text);
         if (result.IsFailed)
         {
@@ -54,7 +41,7 @@ public partial class DiscordApiProvider : IBotApiProvider, IDisposable
         
         try
         {
-            RestUserMessage message = await _client.GetGuild((ulong) sender.ChatId)
+            await _client.GetGuild((ulong) sender.ChatId)
                 .GetTextChannel((ulong) sender.UserSenderId)
                 .SendFileAsync(mediaFile.Path, text);
             return Result.Ok();
@@ -67,11 +54,11 @@ public partial class DiscordApiProvider : IBotApiProvider, IDisposable
         }
     }
 
-    public async Task<Result> SendOnlineMediaAsync(IBotOnlineFile file, string text, SenderInfo sender)
+    private async Task<Result> SendOnlineMediaAsync(IBotOnlineFile file, string text, SenderInfo sender)
     {
         if (text.Length != 0)
         {
-            Result result = await SendTextAsync(text, sender);
+            Result result = await SendTextMessageAsync(text, sender);
             if (result.IsFailed)
             {
                 return result;

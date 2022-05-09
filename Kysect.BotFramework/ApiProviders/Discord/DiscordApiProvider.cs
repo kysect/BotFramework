@@ -4,15 +4,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
-using Discord.Rest;
 using Discord.WebSocket;
 using Kysect.BotFramework.Core;
 using Kysect.BotFramework.Core.BotMedia;
 using Kysect.BotFramework.Core.BotMessages;
-using Kysect.BotFramework.Core.Contexts;
-using Kysect.BotFramework.Core.Tools;
 using Kysect.BotFramework.Core.Tools.Loggers;
-using Kysect.BotFramework.DefaultCommands;
 using Kysect.BotFramework.Settings;
 
 namespace Kysect.BotFramework.ApiProviders.Discord
@@ -95,39 +91,21 @@ namespace Kysect.BotFramework.ApiProviders.Discord
 
         private IBotMessage ParseMessage(SocketUserMessage message, SocketCommandContext context)
         {
-            if (context.Message.Attachments.Count == 0)
-            {
-                return new BotTextMessage(context.Message.Content);
-            }
-
-            if (context.Message.Attachments.Count == 1)
-            {
-                IBotOnlineFile onlineFile =
-                    GetOnlineFile(message.Attachments.First().Filename, message.Attachments.First().Url);
-                return onlineFile is not null
-                    ? new BotSingleMediaMessage(context.Message.Content, onlineFile)
-                    : new BotTextMessage(context.Message.Content);
-            }
-
             List<IBotMediaFile> mediaFiles = context.Message.Attachments
                                                     .Select(attachment =>
                                                                 GetOnlineFile(attachment.Filename, attachment.Url))
-                                                    .Where(onlineFile => onlineFile is not null).Cast<IBotMediaFile>()
+                                                    .Where(onlineFile => onlineFile is not null)
+                                                    .Cast<IBotMediaFile>()
                                                     .ToList();
 
-            if (!mediaFiles.Any())
+            IBotMessage parsedMessage = mediaFiles.Count switch
             {
-                return new BotTextMessage(context.Message.Content);
-            }
+                0 => new BotTextMessage(context.Message.Content),
+                1 => new BotSingleMediaMessage(context.Message.Content, mediaFiles.Single()),
+                _ => new BotMultipleMediaMessage(context.Message.Content, mediaFiles),
+            };
 
-
-            if (mediaFiles.Count == 1)
-            {
-                return new BotSingleMediaMessage(context.Message.Content, mediaFiles.First());
-            }
-
-
-            return new BotMultipleMediaMessage(context.Message.Content, mediaFiles);
+            return parsedMessage;
         }
 
         private IBotOnlineFile GetOnlineFile(string filename, string url)
