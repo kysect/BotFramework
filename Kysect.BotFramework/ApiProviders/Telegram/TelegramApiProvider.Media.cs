@@ -55,7 +55,7 @@ public partial class TelegramApiProvider
         List<FileStream> streams)
     {
         List<IAlbumInputMedia> filesToSend = new List<IAlbumInputMedia>();
-        filesToSend.Add(ConstructAlbumInputMedia(mediaFiles.First(), String.Empty, streams));
+        filesToSend.Add(ConstructAlbumInputMedia(mediaFiles.First(), text, streams));
 
         foreach (IBotMediaFile mediaFile in mediaFiles.Skip(1))
         {
