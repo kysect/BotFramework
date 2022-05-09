@@ -15,7 +15,6 @@ namespace Kysect.BotFramework.ApiProviders
         void Restart();
         Task<Result> SendMultipleMediaAsync(List<IBotMediaFile> mediaFiles, string text, SenderInfo sender);
         Task<Result> SendMediaAsync(IBotMediaFile mediaFile, string text, SenderInfo sender);
-        Task<Result> SendOnlineMediaAsync(IBotOnlineFile file, string text, SenderInfo sender);
         Task<Result> SendTextMessageAsync(string text, SenderInfo sender);
     }
 }

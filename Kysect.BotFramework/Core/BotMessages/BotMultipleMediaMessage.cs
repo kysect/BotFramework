@@ -8,6 +8,7 @@ namespace Kysect.BotFramework.Core.BotMessages
 {
     public class BotMultipleMediaMessage : IBotMessage
     {
+        public string Text { get; }
         public List<IBotMediaFile> MediaFiles { get; }
 
         public BotMultipleMediaMessage(string text, List<IBotMediaFile> mediaFiles)
@@ -15,9 +16,7 @@ namespace Kysect.BotFramework.Core.BotMessages
             Text = text;
             MediaFiles = mediaFiles;
         }
-
-        public string Text { get; }
-
+        
         public async Task SendAsync(IBotApiProvider apiProvider, SenderInfo sender)
         {
             await apiProvider.SendMultipleMediaAsync(MediaFiles, Text, sender);

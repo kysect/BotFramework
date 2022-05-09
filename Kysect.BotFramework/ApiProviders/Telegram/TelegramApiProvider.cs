@@ -63,27 +63,15 @@ namespace Kysect.BotFramework.ApiProviders.Telegram
         private void ClientOnMessage(object sender, MessageEventArgs e)
         {
             LoggerHolder.Instance.Debug("New message event: {@e}", e);
-            IBotMessage message = new BotTextMessage(string.Empty);
             string text = e.Message.Text ?? e.Message.Caption;
-            switch (e.Message.Type)
+            IBotMessage message = e.Message.Type switch
             {
-                case MessageType.Photo:
-                {
-                    var mediaFile = new BotOnlinePhotoFile(GetFileLink(e.Message.Photo.Last().FileId),
-                        e.Message.Photo.Last().FileId);
-                    message = new BotSingleMediaMessage(text, mediaFile);
-                    break;
-                }
-                case MessageType.Video:
-                {
-                    var mediaFile = new BotOnlineVideoFile(GetFileLink(e.Message.Video.FileId), e.Message.Video.FileId);
-                    message = new BotSingleMediaMessage(text, mediaFile);
-                    break;
-                }
-                default:
-                    message = new BotTextMessage(text);
-                    break;
-            }
+                MessageType.Photo => new BotSingleMediaMessage(text,
+                    new BotOnlinePhotoFile(GetFileLink(e.Message.Photo.Last().FileId), e.Message.Photo.Last().FileId)),
+                MessageType.Video => new BotSingleMediaMessage(text,
+                    new BotOnlineVideoFile(GetFileLink(e.Message.Video.FileId), e.Message.Video.FileId)),
+                _ => new BotTextMessage(text),
+            };
 
             OnMessage?.Invoke(sender,
                 new BotNewMessageEventArgs(

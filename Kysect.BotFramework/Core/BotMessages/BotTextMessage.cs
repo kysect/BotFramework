@@ -6,13 +6,13 @@ namespace Kysect.BotFramework.Core.BotMessages
 {
     public class BotTextMessage : IBotMessage
     {
+        public string Text { get; }
+
         public BotTextMessage(string text)
         {
             Text = text;
         }
-
-        public string Text { get; }
-
+        
         public async Task SendAsync(IBotApiProvider apiProvider, SenderInfo sender)
         {
             await apiProvider.SendTextMessageAsync(Text, sender);

@@ -3,19 +3,14 @@ using System.Threading.Tasks;
 using Kysect.BotFramework.Core.Contexts;
 using Kysect.BotFramework.Core.Tools;
 using Kysect.BotFramework.Core.Tools.Loggers;
-using Telegram.Bot.Types;
 
 namespace Kysect.BotFramework.ApiProviders.Telegram;
 
-public partial class TelegramApiProvider : IBotApiProvider, IDisposable
+public partial class TelegramApiProvider
 {
     public async Task<Result> SendTextMessageAsync(string text, SenderInfo sender)
     {
-        if (text.Length == 0)
-        {
-            LoggerHolder.Instance.Error("The message wasn't sent by the command, the length must not be zero.");
-            return Result.Ok();
-        }
+        
 
         return await SendText(text, sender);
     }
@@ -30,25 +25,24 @@ public partial class TelegramApiProvider : IBotApiProvider, IDisposable
             
         try
         {
-            Message message = await _client.SendTextMessageAsync(sender.ChatId, text);
+            await _client.SendTextMessageAsync(sender.ChatId, text);
             return Result.Ok();
         }
         catch (Exception e)
         {
             const string message = "Error while sending message";
             LoggerHolder.Instance.Error(e, message);
-            return Result.Fail(e.Message);
+            return Result.Fail(e);
         }
     }
 
     private Result CheckText(string text)
     {
-        if (text.Length > 4096)
+        return text.Length switch
         {
-            string errorMessage = "The message wasn't sent by the command, the length is too big.";
-            return Result.Fail(errorMessage);
-        }
-
-        return Result.Ok();
+            > 4096 => Result.Fail("The message wasn't sent by the command, the length is too big."),
+            0 => Result.Fail("The message wasn't sent by the command, the length must not be zero"),
+            _ => Result.Ok()
+        };
     }
 }
