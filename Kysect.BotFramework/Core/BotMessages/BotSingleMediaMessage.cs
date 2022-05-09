@@ -7,6 +7,7 @@ namespace Kysect.BotFramework.Core.BotMessages
 {
     public class BotSingleMediaMessage : IBotMessage
     {
+        public string Text { get; }
         public IBotMediaFile MediaFile { get; }
 
         public BotSingleMediaMessage(string text, IBotMediaFile mediaFile)
@@ -15,18 +16,9 @@ namespace Kysect.BotFramework.Core.BotMessages
             MediaFile = mediaFile;
         }
 
-        public string Text { get; }
-
         public async Task SendAsync(IBotApiProvider apiProvider, SenderInfo sender)
         {
-            if (MediaFile is IBotOnlineFile onlineFile)
-            {
-                await apiProvider.SendOnlineMediaAsync(onlineFile, Text, sender);
-            }
-            else
-            {
-                await apiProvider.SendMediaAsync(MediaFile, Text, sender);
-            }
+            await apiProvider.SendMediaAsync(MediaFile, Text, sender);
         }
     }
 }
