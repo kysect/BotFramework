@@ -35,7 +35,7 @@ public partial class DiscordApiProvider
         {
             const string message = "Error while sending message";
             LoggerHolder.Instance.Error(e, message);
-            return Result.Fail(e.Message);
+            return Result.Fail(e);
         }
     }
 
