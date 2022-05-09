@@ -12,7 +12,7 @@ using File = System.IO.File;
 
 namespace Kysect.BotFramework.ApiProviders.Telegram;
 
-public partial class TelegramApiProvider : IBotApiProvider, IDisposable
+public partial class TelegramApiProvider
 {
     public async Task<Result> SendMultipleMediaAsync(List<IBotMediaFile> mediaFiles, string text, SenderInfo sender)
         {
@@ -31,8 +31,7 @@ public partial class TelegramApiProvider : IBotApiProvider, IDisposable
 
             try
             {
-                Message[] task = await _client.SendMediaGroupAsync(filesToSend, sender.ChatId);
-
+                await _client.SendMediaGroupAsync(filesToSend, sender.ChatId);
                 return Result.Ok();
             }
             catch (Exception e)
@@ -44,7 +43,7 @@ public partial class TelegramApiProvider : IBotApiProvider, IDisposable
             }
             finally
             {
-                foreach (FileStream stream in streams)
+                foreach (var stream in streams)
                 {
                     stream.Close();
                 }
@@ -55,55 +54,37 @@ public partial class TelegramApiProvider : IBotApiProvider, IDisposable
             List<FileStream> streams)
         {
             List<IAlbumInputMedia> filesToSend = new List<IAlbumInputMedia>();
-            IAlbumInputMedia fileToSend;
-            if (mediaFiles.First() is IBotOnlineFile onlineFile)
+            filesToSend.Add(ConstructAlbumInputMedia(mediaFiles.First(), String.Empty, streams));
+
+            foreach (IBotMediaFile mediaFile in mediaFiles.Skip(1))
             {
-                fileToSend = mediaFiles.First().MediaType switch
+                filesToSend.Add(ConstructAlbumInputMedia(mediaFile, String.Empty, streams));
+            }
+
+            return filesToSend;
+        }
+
+        private IAlbumInputMedia ConstructAlbumInputMedia(IBotMediaFile mediaFile, string caption, List<FileStream> streams)
+        {
+            if (mediaFile is IBotOnlineFile onlineFile)
+            {
+                return mediaFile.MediaType switch
                 {
-                    MediaTypeEnum.Photo => new InputMediaPhoto(onlineFile.Id) {Caption = text},
-                    MediaTypeEnum.Video => new InputMediaVideo(onlineFile.Id) {Caption = text}
+                    MediaTypeEnum.Photo => new InputMediaPhoto(onlineFile.Id) {Caption = caption},
+                    MediaTypeEnum.Video => new InputMediaVideo(onlineFile.Id) {Caption = caption}
                 };
             }
             else
             {
-                streams.Add(File.Open(mediaFiles.First().Path, FileMode.Open));
+                streams.Add(File.Open(mediaFile.Path, FileMode.Open));
                 var inputMedia = new InputMedia(streams.Last(),
-                                                mediaFiles.First().Path.Split(Path.DirectorySeparatorChar).Last());
-                fileToSend = mediaFiles.First().MediaType switch
+                    mediaFile.Path.Split(Path.DirectorySeparatorChar).Last());
+                return mediaFile.MediaType switch
                 {
-                    MediaTypeEnum.Photo => new InputMediaPhoto(inputMedia) {Caption = text},
-                    MediaTypeEnum.Video => new InputMediaVideo(inputMedia) {Caption = text}
+                    MediaTypeEnum.Photo => new InputMediaPhoto(inputMedia) {Caption = caption},
+                    MediaTypeEnum.Video => new InputMediaVideo(inputMedia) {Caption = caption}
                 };
             }
-
-            filesToSend.Add(fileToSend);
-
-            foreach (IBotMediaFile mediaFile in mediaFiles.Skip(1))
-            {
-                if (mediaFile is IBotOnlineFile onlineMediaFile)
-                {
-                    fileToSend = mediaFile.MediaType switch
-                    {
-                        MediaTypeEnum.Photo => new InputMediaPhoto(onlineMediaFile.Id) {Caption = text},
-                        MediaTypeEnum.Video => new InputMediaVideo(onlineMediaFile.Id) {Caption = text}
-                    };
-                }
-                else
-                {
-                    streams.Add(File.Open(mediaFile.Path, FileMode.Open));
-                    var inputMedia = new InputMedia(streams.Last(),
-                                                    mediaFile.Path.Split(Path.DirectorySeparatorChar).Last());
-                    fileToSend = mediaFile.MediaType switch
-                    {
-                        MediaTypeEnum.Photo => new InputMediaPhoto(inputMedia),
-                        MediaTypeEnum.Video => new InputMediaVideo(inputMedia)
-                    };
-                }
-
-                filesToSend.Add(fileToSend);
-            }
-
-            return filesToSend;
         }
 
         private Result CheckMediaFiles(List<IBotMediaFile> mediaFiles)
@@ -122,6 +103,8 @@ public partial class TelegramApiProvider : IBotApiProvider, IDisposable
 
         public async Task<Result> SendMediaAsync(IBotMediaFile mediaFile, string text, SenderInfo sender)
         {
+            if (mediaFile is IBotOnlineFile onlineFile) return await SendOnlineMediaAsync(onlineFile, text, sender);
+            
             Result result = CheckText(text);
             if (result.IsFailed)
             {
@@ -130,15 +113,14 @@ public partial class TelegramApiProvider : IBotApiProvider, IDisposable
 
             FileStream stream = File.Open(mediaFile.Path, FileMode.Open);
             var fileToSend = new InputMedia(stream, mediaFile.Path.Split(Path.DirectorySeparatorChar).Last());
-            
 
             try
             {
-                Message message = mediaFile.MediaType switch
-                {
-                    MediaTypeEnum.Photo => await _client.SendPhotoAsync(sender.ChatId, fileToSend, text),
-                    MediaTypeEnum.Video => await _client.SendVideoAsync(sender.ChatId, fileToSend, caption: text)
-                };
+                if (mediaFile.MediaType == MediaTypeEnum.Photo)
+                    await _client.SendPhotoAsync(sender.ChatId, fileToSend, text);
+                else if (mediaFile.MediaType == MediaTypeEnum.Video)
+                    await _client.SendVideoAsync(sender.ChatId, fileToSend, caption: text);
+
                 return Result.Ok();
             }
             catch (Exception e)
@@ -165,11 +147,11 @@ public partial class TelegramApiProvider : IBotApiProvider, IDisposable
             
             try
             {
-                Message msg = file.MediaType switch
-                {
-                    MediaTypeEnum.Photo => await _client.SendPhotoAsync(sender.ChatId, fileIdentifier, text),
-                    MediaTypeEnum.Video => await _client.SendVideoAsync(sender.ChatId, fileIdentifier, caption: text)
-                };
+                if (file.MediaType == MediaTypeEnum.Photo)
+                    await _client.SendPhotoAsync(sender.ChatId, fileIdentifier, text);
+                else if (file.MediaType == MediaTypeEnum.Video)
+                    await _client.SendVideoAsync(sender.ChatId, fileIdentifier, caption: text);
+
                 return Result.Ok();
             }
             catch (Exception e)
