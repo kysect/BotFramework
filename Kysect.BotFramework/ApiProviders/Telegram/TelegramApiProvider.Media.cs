@@ -7,6 +7,7 @@ using Kysect.BotFramework.Core.BotMedia;
 using Kysect.BotFramework.Core.Contexts;
 using Kysect.BotFramework.Core.Tools;
 using Kysect.BotFramework.Core.Tools.Loggers;
+using Kysect.BotFramework.Settings;
 using Telegram.Bot.Types;
 using File = System.IO.File;
 
@@ -78,7 +79,7 @@ public partial class TelegramApiProvider
         {
             streams.Add(File.Open(mediaFile.Path, FileMode.Open));
             var inputMedia = new InputMedia(streams.Last(),
-                mediaFile.Path.Split(Path.DirectorySeparatorChar).Last());
+                mediaFile.GetFileExtension());
             return mediaFile.MediaType switch
             {
                 MediaTypeEnum.Photo => new InputMediaPhoto(inputMedia) {Caption = caption},
@@ -113,7 +114,7 @@ public partial class TelegramApiProvider
         }
 
         FileStream stream = File.Open(mediaFile.Path, FileMode.Open);
-        var fileToSend = new InputMedia(stream, mediaFile.Path.Split(Path.DirectorySeparatorChar).Last());
+        var fileToSend = new InputMedia(stream, mediaFile.GetFileExtension());
 
         try
         {
