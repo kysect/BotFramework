@@ -14,25 +14,5 @@ namespace Kysect.BotFramework.Data.Entities
             ContextType = contextType;
             SenderInfoId = senderInfoId;
         }
-
-        public static DialogContextEntity GetOrCreate(
-            long senderInfoId,
-            ContextType type,
-            BotFrameworkDbContext dbContext)
-        {
-            DialogContextEntity contextModel = dbContext.DialogContexts.FirstOrDefault(
-                c => 
-                    c.SenderInfoId == senderInfoId 
-                    && c.ContextType == type);
-
-            if (contextModel is null)
-            {
-                contextModel = new DialogContextEntity(type,senderInfoId);
-                dbContext.DialogContexts.Add(contextModel);
-                dbContext.SaveChanges();
-            }
-
-            return contextModel;
-        }
     }
 }

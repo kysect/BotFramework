@@ -23,7 +23,7 @@ namespace Kysect.BotFramework.Core.Contexts
 
         internal async Task SaveChangesAsync(BotFrameworkDbContext dbContext)
         {
-            DialogContextEntity context = DialogContextEntity.GetOrCreate(_senderInfoId, _contextType, dbContext);
+            DialogContextEntity context = dbContext.GetOrCreateDialogContext(_senderInfoId, _contextType);
             context.State = State;
             dbContext.DialogContexts.Update(context);
             await dbContext.SaveChangesAsync();

@@ -23,7 +23,7 @@ namespace Kysect.BotFramework.ApiProviders.Telegram
         internal override DialogContext GetOrCreateDialogContext(BotFrameworkDbContext dbContext)
         {
             var contextSenderInfo = TelegramSenderInfoEntity.GetOrCreate(this, dbContext);
-            var contextModel = DialogContextEntity.GetOrCreate(contextSenderInfo.Id, ContextType.Telegram, dbContext);
+            var contextModel = dbContext.GetOrCreateDialogContext(contextSenderInfo.Id, ContextType.Telegram);
             
             return new DialogContext(contextModel.State, contextModel.SenderInfoId, ContextType.Telegram, this);
         }

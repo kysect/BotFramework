@@ -29,7 +29,7 @@ namespace Kysect.BotFramework.ApiProviders.Discord
         {
             var contextSenderInfo = DiscordSenderInfoEntity.GetOrCreate(this, dbContext);
 
-            var contextModel = DialogContextEntity.GetOrCreate(contextSenderInfo.Id, ContextType.Discord, dbContext);
+            var contextModel = dbContext.GetOrCreateDialogContext(contextSenderInfo.Id, ContextType.Discord);
             
             return new DialogContext(contextModel.State, contextModel.SenderInfoId, ContextType.Discord, this);
         }

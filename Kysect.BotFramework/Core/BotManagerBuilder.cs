@@ -11,6 +11,7 @@ using Kysect.BotFramework.Core.Tools;
 using Kysect.BotFramework.Core.Tools.Extensions;
 using Kysect.BotFramework.Core.Tools.Loggers;
 using Kysect.BotFramework.Data;
+using Kysect.BotFramework.DefaultCommands;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
