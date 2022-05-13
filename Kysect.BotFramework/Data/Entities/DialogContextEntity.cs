@@ -6,27 +6,28 @@ namespace Kysect.BotFramework.Data.Entities
     public class DialogContextEntity
     {
         public int State { get; set; }
-        public ContextType ContextType { get; set; }
-        public long SenderInfoId { get; set; }
+        public ContextType ContextType { get; }
+        public long SenderInfoId { get; }
+
+        public DialogContextEntity(ContextType contextType, long senderInfoId)
+        {
+            ContextType = contextType;
+            SenderInfoId = senderInfoId;
+        }
 
         public static DialogContextEntity GetOrCreate(
-            SenderInfoEntity senderInfoEntity,
+            long senderInfoId,
             ContextType type,
             BotFrameworkDbContext dbContext)
         {
             DialogContextEntity contextModel = dbContext.DialogContexts.FirstOrDefault(
                 c => 
-                    c.SenderInfoId == senderInfoEntity.Id 
+                    c.SenderInfoId == senderInfoId 
                     && c.ContextType == type);
 
             if (contextModel is null)
             {
-                contextModel = new DialogContextEntity()
-                {
-                    ContextType = type,
-                    SenderInfoId = senderInfoEntity.Id
-                };
-
+                contextModel = new DialogContextEntity(type,senderInfoId);
                 dbContext.DialogContexts.Add(contextModel);
                 dbContext.SaveChanges();
             }
