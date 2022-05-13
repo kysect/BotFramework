@@ -56,16 +56,9 @@ namespace Kysect.BotFramework.Core
             {
                 await ProcessMessage(e);
             }
-            catch (BotException exception)
-            {
-                await HandlerError(exception, e);
-            }
             catch (Exception exception)
             {
-                LoggerHolder.Instance.Error(exception, $"Message handling from [{e.SenderInfo.UserSenderUsername}] failed.");
-                LoggerHolder.Instance.Debug($"Failed message: {e.Message.Text}");
-                //FYI: we do not need to restart on each exception, but probably we have case were restart must be.
-                //_apiProvider.Restart();
+                await HandlerError(exception, e);
             }
         }
 
@@ -105,20 +98,23 @@ namespace Kysect.BotFramework.Core
             await message.SendAsync(_apiProvider, sender);
         }
 
-        private async Task HandlerError(BotException exception, BotNewMessageEventArgs botEventArgs)
+        private async Task HandlerError(Exception exception, BotNewMessageEventArgs botEventArgs)
         {
-            LoggerHolder.Instance.Error(exception.Message);
+            LoggerHolder.Instance.Error(exception,
+                $"Message handling from [{botEventArgs.SenderInfo.UserSenderUsername}] failed.");
+            LoggerHolder.Instance.Debug($"Failed message: {botEventArgs.Message.Text}");
 
-            if (_sendErrorLogToUser)
+            IBotMessage errorMessage;
+            if (exception is BotClientException || _sendErrorLogToUser)
             {
-                var errorLogMessage = new BotTextMessage(exception.Message);
-                await errorLogMessage.SendAsync(_apiProvider, botEventArgs.SenderInfo);
+                errorMessage = new BotTextMessage(exception.Message);
             }
             else
             {
-                var errorMessage = new BotTextMessage("Something went wrong.");
-                await errorMessage.SendAsync(_apiProvider, botEventArgs.SenderInfo);
+                errorMessage = new BotTextMessage("Something went wrong.");
             }
+            
+            await errorMessage.SendAsync(_apiProvider, botEventArgs.SenderInfo);
         }
     }
 }
