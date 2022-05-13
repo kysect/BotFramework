@@ -2,7 +2,7 @@
 
 namespace Kysect.BotFramework.Core.Exceptions;
 
-public class CommandNotFoundException : BotException
+public class CommandNotFoundException : BotClientException
 {
     public CommandNotFoundException() : base() { }
     public CommandNotFoundException(string message) : base(message) { }

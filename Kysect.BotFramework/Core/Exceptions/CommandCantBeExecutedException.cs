@@ -2,7 +2,7 @@
 
 namespace Kysect.BotFramework.Core.Exceptions;
 
-public class CommandCantBeExecutedException : BotException
+public class CommandCantBeExecutedException : BotInnerException
 {
     public CommandCantBeExecutedException() : base() { }
     public CommandCantBeExecutedException(string message) : base(message) { }

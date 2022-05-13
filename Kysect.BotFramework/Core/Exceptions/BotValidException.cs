@@ -2,14 +2,9 @@
 
 namespace Kysect.BotFramework.Core.Exceptions
 {
-    public class BotValidException : ArgumentNullException
+    public class BotValidException : ArgumentException
     {
-        public BotValidException()
-        {
-        }
-
-        public BotValidException(string message) : base(message)
-        {
-        }
+        public BotValidException() { }
+        public BotValidException(string message) : base(message) { }
     }
 }

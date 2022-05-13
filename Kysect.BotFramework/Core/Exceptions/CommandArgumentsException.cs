@@ -2,7 +2,7 @@
 
 namespace Kysect.BotFramework.Core.Exceptions;
 
-public class CommandArgumentsException : BotException
+public class CommandArgumentsException : BotClientException
 {
     public CommandArgumentsException() : base() { }
     public CommandArgumentsException(string message) : base(message) { }
