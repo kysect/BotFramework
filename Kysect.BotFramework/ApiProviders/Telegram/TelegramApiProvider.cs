@@ -19,7 +19,7 @@ using File = System.IO.File;
 
 namespace Kysect.BotFramework.ApiProviders.Telegram
 {
-    public class TelegramApiProvider : IBotApiProvider, IDisposable
+    public partial class TelegramApiProvider : IBotApiProvider, IDisposable
     {
         private readonly object _lock = new object();
         private readonly TelegramSettings _settings;
@@ -45,7 +45,7 @@ namespace Kysect.BotFramework.ApiProviders.Telegram
                 Initialize();
             }
         }
-        
+
         private void Initialize()
         {
             _client = new TelegramBotClient(_settings.AccessToken);
@@ -53,7 +53,7 @@ namespace Kysect.BotFramework.ApiProviders.Telegram
             _client.OnMessage += ClientOnMessage;
             _client.StartReceiving();
         }
-        
+
         public void Dispose()
         {
             _client.OnMessage -= ClientOnMessage;
@@ -63,38 +63,26 @@ namespace Kysect.BotFramework.ApiProviders.Telegram
         private void ClientOnMessage(object sender, MessageEventArgs e)
         {
             LoggerHolder.Instance.Debug("New message event: {@e}", e);
-            IBotMessage message = new BotTextMessage(string.Empty);
             string text = e.Message.Text ?? e.Message.Caption;
-            switch (e.Message.Type)
+            IBotMessage message = e.Message.Type switch
             {
-                case MessageType.Photo:
-                {
-                    var mediaFile = new BotOnlinePhotoFile(GetFileLink(e.Message.Photo.Last().FileId),
-                                                           e.Message.Photo.Last().FileId);
-                    message = new BotSingleMediaMessage(text, mediaFile);
-                    break;
-                }
-                case MessageType.Video:
-                {
-                    var mediaFile = new BotOnlineVideoFile(GetFileLink(e.Message.Video.FileId), e.Message.Video.FileId);
-                    message = new BotSingleMediaMessage(text, mediaFile);
-                    break;
-                }
-                default:
-                    message = new BotTextMessage(text);
-                    break;
-            }
-            
+                MessageType.Photo => new BotSingleMediaMessage(text,
+                    new BotOnlinePhotoFile(GetFileLink(e.Message.Photo.Last().FileId), e.Message.Photo.Last().FileId)),
+                MessageType.Video => new BotSingleMediaMessage(text,
+                    new BotOnlineVideoFile(GetFileLink(e.Message.Video.FileId), e.Message.Video.FileId)),
+                _ => new BotTextMessage(text),
+            };
+
             OnMessage?.Invoke(sender,
-                              new BotNewMessageEventArgs(
-                                  message,
-                                  new TelegramSenderInfo(
-                                      e.Message.Chat.Id,
-                                      e.Message.From.Id,
-                                      e.Message.From.FirstName,
-                                      CheckIsAdmin(e.Message.From.Id,e.Message.Chat.Id)
-                                  )
-                              ));
+                new BotNewMessageEventArgs(
+                    message,
+                    new TelegramSenderInfo(
+                        e.Message.Chat.Id,
+                        e.Message.From.Id,
+                        e.Message.From.FirstName,
+                        CheckIsAdmin(e.Message.From.Id, e.Message.Chat.Id)
+                    )
+                ));
         }
 
         private string GetFileLink(string id) =>
@@ -104,221 +92,6 @@ namespace Kysect.BotFramework.ApiProviders.Telegram
         {
             var chatMember = _client.GetChatMemberAsync(chatId, userId).Result;
             return chatMember.Status is ChatMemberStatus.Administrator or ChatMemberStatus.Creator;
-        }
-
-        public Result SendMultipleMedia(List<IBotMediaFile> mediaFiles, string text, SenderInfo sender)
-        {
-            var checkResult = CheckMediaFiles(mediaFiles);
-            if (checkResult.IsFailed)
-                return checkResult;
-
-            Result result = CheckText(text);
-            if (result.IsFailed)
-            {
-                return result;
-            }
-
-            List<FileStream> streams = new List<FileStream>();
-            List<IAlbumInputMedia> filesToSend = CollectInputMedia(mediaFiles, text, streams);
-
-            Task<Message[]> task = _client.SendMediaGroupAsync(filesToSend, sender.ChatId);
-
-            try
-            {
-                task.Wait();
-                foreach (FileStream stream in streams)
-                {
-                    stream.Close();
-                }
-
-                return Result.Ok();
-            }
-            catch (Exception e)
-            {
-                foreach (FileStream stream in streams)
-                {
-                    stream.Close();
-                }
-                
-                const string message = "Error while sending message";
-                LoggerHolder.Instance.Error(e, message);
-
-                return Result.Fail(e.Message);
-            }
-        }
-        
-        private List<IAlbumInputMedia> CollectInputMedia(List<IBotMediaFile> mediaFiles, string text,
-            List<FileStream> streams)
-        {
-            List<IAlbumInputMedia> filesToSend = new List<IAlbumInputMedia>();
-            IAlbumInputMedia fileToSend;
-            if (mediaFiles.First() is IBotOnlineFile onlineFile)
-            {
-                fileToSend = mediaFiles.First().MediaType switch
-                {
-                    MediaTypeEnum.Photo => new InputMediaPhoto(onlineFile.Id) {Caption = text},
-                    MediaTypeEnum.Video => new InputMediaVideo(onlineFile.Id) {Caption = text}
-                };
-            }
-            else
-            {
-                streams.Add(File.Open(mediaFiles.First().Path, FileMode.Open));
-                var inputMedia = new InputMedia(streams.Last(),
-                                                mediaFiles.First().Path.Split(Path.DirectorySeparatorChar).Last());
-                fileToSend = mediaFiles.First().MediaType switch
-                {
-                    MediaTypeEnum.Photo => new InputMediaPhoto(inputMedia) {Caption = text},
-                    MediaTypeEnum.Video => new InputMediaVideo(inputMedia) {Caption = text}
-                };
-            }
-
-            filesToSend.Add(fileToSend);
-
-            foreach (IBotMediaFile mediaFile in mediaFiles.Skip(1))
-            {
-                if (mediaFile is IBotOnlineFile onlineMediaFile)
-                {
-                    fileToSend = mediaFile.MediaType switch
-                    {
-                        MediaTypeEnum.Photo => new InputMediaPhoto(onlineMediaFile.Id) {Caption = text},
-                        MediaTypeEnum.Video => new InputMediaVideo(onlineMediaFile.Id) {Caption = text}
-                    };
-                }
-                else
-                {
-                    streams.Add(File.Open(mediaFile.Path, FileMode.Open));
-                    var inputMedia = new InputMedia(streams.Last(),
-                                                    mediaFile.Path.Split(Path.DirectorySeparatorChar).Last());
-                    fileToSend = mediaFile.MediaType switch
-                    {
-                        MediaTypeEnum.Photo => new InputMediaPhoto(inputMedia),
-                        MediaTypeEnum.Video => new InputMediaVideo(inputMedia)
-                    };
-                }
-
-                filesToSend.Add(fileToSend);
-            }
-
-            return filesToSend;
-        }
-
-        private Result CheckMediaFiles(List<IBotMediaFile> mediaFiles)
-        {
-            //TODO: hack
-            if (mediaFiles.Count <= 10)
-            {
-                return Result.Ok();
-            }
-
-            const string message = "Too many files provided";
-            LoggerHolder.Instance.Error(message);
-            return Result.Fail(message);
-
-        }
-
-        public Result SendMedia(IBotMediaFile mediaFile, string text, SenderInfo sender)
-        {
-            Result result = CheckText(text);
-            if (result.IsFailed)
-            {
-                return result;
-            }
-
-            FileStream stream = File.Open(mediaFile.Path, FileMode.Open);
-            var fileToSend = new InputMedia(stream, mediaFile.Path.Split(Path.DirectorySeparatorChar).Last());
-            Task<Message> task = mediaFile.MediaType switch
-            {
-                MediaTypeEnum.Photo => _client.SendPhotoAsync(sender.ChatId, fileToSend, text),
-                MediaTypeEnum.Video => _client.SendVideoAsync(sender.ChatId, fileToSend, caption: text)
-            };
-
-            try
-            {
-                task.Wait();
-                stream.Close();
-                return Result.Ok();
-            }
-            catch (Exception e)
-            {
-                const string message = "Error while sending message";
-                LoggerHolder.Instance.Error(e, message);
-                stream.Close();
-                return Result.Fail(e.Message);
-            }
-        }
-
-        public Result SendOnlineMedia(IBotOnlineFile file, string text, SenderInfo sender)
-        {
-            Result result = CheckText(text);
-            if (result.IsFailed)
-            {
-                return result;
-            }
-
-            string fileIdentifier = file.Id ?? file.Path;
-
-            Task<Message> task = file.MediaType switch
-            {
-                MediaTypeEnum.Photo => _client.SendPhotoAsync(sender.ChatId, fileIdentifier, text),
-                MediaTypeEnum.Video => _client.SendVideoAsync(sender.ChatId, fileIdentifier, caption: text)
-            };
-
-            try
-            {
-                task.Wait();
-                return Result.Ok();
-            }
-            catch (Exception e)
-            {
-                const string message = "Error while sending message";
-                LoggerHolder.Instance.Error(e, message);
-                return Result.Fail(e.Message);
-            }
-        }
-
-        public Result SendTextMessage(string text, SenderInfo sender)
-        {
-            if (text.Length == 0)
-            {
-                LoggerHolder.Instance.Error("The message wasn't sent by the command, the length must not be zero.");
-                return Result.Ok();
-            }
-
-            return SendText(text, sender);
-        }
-
-        private Result SendText(string text, SenderInfo sender)
-        {
-            Result result = CheckText(text);
-            if (result.IsFailed)
-            {
-                return result;
-            }
-
-            Task<Message> task = _client.SendTextMessageAsync(sender.ChatId, text);
-
-            try
-            {
-                task.Wait();
-                return Result.Ok();
-            }
-            catch (Exception e)
-            {
-                const string message = "Error while sending message";
-                LoggerHolder.Instance.Error(e, message);
-                return Result.Fail(e.Message);
-            }
-        }
-
-        private Result CheckText(string text)
-        {
-            if (text.Length > 4096)
-            {
-                string errorMessage = "The message wasn't sent by the command, the length is too big.";
-                return Result.Fail(errorMessage);
-            }
-
-            return Result.Ok();
         }
     }
 }

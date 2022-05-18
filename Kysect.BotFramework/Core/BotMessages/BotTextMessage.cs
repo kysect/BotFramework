@@ -1,20 +1,21 @@
-﻿using Kysect.BotFramework.ApiProviders;
+﻿using System.Threading.Tasks;
+using Kysect.BotFramework.ApiProviders;
 using Kysect.BotFramework.Core.Contexts;
 
 namespace Kysect.BotFramework.Core.BotMessages
 {
     public class BotTextMessage : IBotMessage
     {
+        public string Text { get; }
+
         public BotTextMessage(string text)
         {
             Text = text;
         }
-
-        public string Text { get; }
-
-        public void Send(IBotApiProvider apiProvider, SenderInfo sender)
+        
+        public async Task SendAsync(IBotApiProvider apiProvider, SenderInfo sender)
         {
-            apiProvider.SendTextMessage(Text, sender);
+            await apiProvider.SendTextMessageAsync(Text, sender);
         }
     }
 }

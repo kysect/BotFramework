@@ -4,20 +4,16 @@ using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
-using Discord.Rest;
 using Discord.WebSocket;
 using Kysect.BotFramework.Core;
 using Kysect.BotFramework.Core.BotMedia;
 using Kysect.BotFramework.Core.BotMessages;
-using Kysect.BotFramework.Core.Contexts;
-using Kysect.BotFramework.Core.Tools;
 using Kysect.BotFramework.Core.Tools.Loggers;
-using Kysect.BotFramework.DefaultCommands;
 using Kysect.BotFramework.Settings;
 
 namespace Kysect.BotFramework.ApiProviders.Discord
 {
-    public class DiscordApiProvider : IBotApiProvider, IDisposable
+    public partial class DiscordApiProvider : IBotApiProvider, IDisposable
     {
         private readonly object _lock = new object();
         private readonly DiscordSettings _settings;
@@ -43,88 +39,7 @@ namespace Kysect.BotFramework.ApiProviders.Discord
                 Initialize();
             }
         }
-
-        public Result SendMultipleMedia(List<IBotMediaFile> mediaFiles, string text, SenderInfo sender)
-        {
-            Result result;
-            if (mediaFiles.First() is IBotOnlineFile onlineFile)
-            {
-                result = SendOnlineMedia(onlineFile, text, sender);
-            }
-            else
-            {
-                result = SendMedia(mediaFiles.First(), text, sender);
-            }
-            
-            foreach (IBotMediaFile media in mediaFiles.Skip(1))
-            {
-                if (result.IsFailed)
-                {
-                    return result;
-                }
-
-                if (media is IBotOnlineFile onlineMediaFile)
-                {
-                    result = SendOnlineMedia(onlineMediaFile, string.Empty, sender);
-                }
-                else
-                {
-                    result = SendMedia(media, string.Empty, sender);
-                }
-            }
-
-            return result;
-        }
-
-        public Result SendMedia(IBotMediaFile mediaFile, string text, SenderInfo sender)
-        {
-            Result result = CheckText(text);
-            if (result.IsFailed)
-            {
-                return result;
-            }
-
-            Task<RestUserMessage> task = _client.GetGuild((ulong) sender.ChatId)
-                                                .GetTextChannel((ulong) sender.UserSenderId)
-                                                .SendFileAsync(mediaFile.Path, text);
-            try
-            {
-                task.Wait();
-                return Result.Ok();
-            }
-            catch (Exception e)
-            {
-                const string message = "Error while sending message";
-                LoggerHolder.Instance.Error(e, message);
-                return Result.Fail(e.Message);
-            }
-        }
-
-        public Result SendOnlineMedia(IBotOnlineFile file, string text, SenderInfo sender)
-        {
-            if (text.Length != 0)
-            {
-                Result result = SendText(text, sender);
-                if (result.IsFailed)
-                {
-                    return result;
-                }
-            }
-
-            return SendText(file.Path, sender);
-        }
-
-        public Result SendTextMessage(string text, SenderInfo sender)
-        {
-            if (text.Length == 0)
-            {
-                LoggerHolder.Instance.Error("The message wasn't sent by the command, the length must not be zero.");
-                return Result.Ok();
-            }
-
-            return SendText(text, sender);
-        }
-
+        
         public void Dispose()
         {
             _client.MessageReceived -= ClientOnMessage;
@@ -176,39 +91,21 @@ namespace Kysect.BotFramework.ApiProviders.Discord
 
         private IBotMessage ParseMessage(SocketUserMessage message, SocketCommandContext context)
         {
-            if (context.Message.Attachments.Count == 0)
-            {
-                return new BotTextMessage(context.Message.Content);
-            }
-
-            if (context.Message.Attachments.Count == 1)
-            {
-                IBotOnlineFile onlineFile =
-                    GetOnlineFile(message.Attachments.First().Filename, message.Attachments.First().Url);
-                return onlineFile is not null
-                    ? new BotSingleMediaMessage(context.Message.Content, onlineFile)
-                    : new BotTextMessage(context.Message.Content);
-            }
-
             List<IBotMediaFile> mediaFiles = context.Message.Attachments
                                                     .Select(attachment =>
                                                                 GetOnlineFile(attachment.Filename, attachment.Url))
-                                                    .Where(onlineFile => onlineFile is not null).Cast<IBotMediaFile>()
+                                                    .Where(onlineFile => onlineFile is not null)
+                                                    .Cast<IBotMediaFile>()
                                                     .ToList();
 
-            if (!mediaFiles.Any())
+            IBotMessage parsedMessage = mediaFiles.Count switch
             {
-                return new BotTextMessage(context.Message.Content);
-            }
+                0 => new BotTextMessage(context.Message.Content),
+                1 => new BotSingleMediaMessage(context.Message.Content, mediaFiles.Single()),
+                _ => new BotMultipleMediaMessage(context.Message.Content, mediaFiles),
+            };
 
-
-            if (mediaFiles.Count == 1)
-            {
-                return new BotSingleMediaMessage(context.Message.Content, mediaFiles.First());
-            }
-
-
-            return new BotMultipleMediaMessage(context.Message.Content, mediaFiles);
+            return parsedMessage;
         }
 
         private IBotOnlineFile GetOnlineFile(string filename, string url)
@@ -244,43 +141,6 @@ namespace Kysect.BotFramework.ApiProviders.Discord
         {
             var socketGuildUser = user as SocketGuildUser;
             return socketGuildUser.GuildPermissions.Administrator;
-        }
-
-        private Result SendText(string text, SenderInfo sender)
-        {
-            Result result = CheckText(text);
-            if (result.IsFailed)
-            {
-                return result;
-            }
-
-            var discordSender = (DiscordSenderInfo)sender;
-            Task<RestUserMessage> task = _client.GetGuild(discordSender.GuildId)
-                                                .GetTextChannel((ulong) sender.ChatId)
-                                                .SendMessageAsync(text);
-
-            try
-            {
-                task.Wait();
-                return Result.Ok();
-            }
-            catch (Exception e)
-            {
-                var message = "Error while sending message";
-                LoggerHolder.Instance.Error(e, message);
-                return Result.Fail(e.Message);
-            }
-        }
-
-        private Result CheckText(string text)
-        {
-            if (text.Length > 2000)
-            {
-                string errorMessage = "The message wasn't sent by the command, the length is too big.";
-                return Result.Fail(errorMessage);
-            }
-
-            return Result.Ok();
         }
     }
 }

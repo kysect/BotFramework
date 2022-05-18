@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using FluentScanning;
-using FluentScanning.DependencyInjection;
 using Kysect.BotFramework.ApiProviders;
 using Kysect.BotFramework.Core.CommandInvoking;
 using Kysect.BotFramework.Core.Commands;
 using Kysect.BotFramework.Core.Exceptions;
+using Kysect.BotFramework.Core.Tools;
 using Kysect.BotFramework.Core.Tools.Extensions;
 using Kysect.BotFramework.Core.Tools.Loggers;
 using Kysect.BotFramework.Data;
@@ -22,6 +23,7 @@ namespace Kysect.BotFramework.Core
 
         private char _prefix = '\0';
         private bool _sendErrorLogToUser;
+        private readonly Dictionary<string, Type> _commandTypes = new Dictionary<string, Type>();
 
         private bool _dbContextInitialized = false;
 
@@ -65,6 +67,7 @@ namespace Kysect.BotFramework.Core
 
             if (descriptor is null)
                 throw new BotValidException("Command must have descriptor attribute");
+            _commandTypes[descriptor.CommandName] = typeof(T);
             ServiceCollection.AddScoped<T>();
             LoggerHolder.Instance.Information($"New command added: {descriptor.CommandName}");
 
@@ -73,15 +76,19 @@ namespace Kysect.BotFramework.Core
 
         public BotManagerBuilder AddCommandsFromAssembly(Assembly assembly)
         {
-            using (var scanner = ServiceCollection.UseAssemblyScanner(assembly))
-            {
- 		scanner.EnqueueAdditionOfTypesThat()
-                    .WouldBeRegisteredAsSelfType()
-                    .WithScopedLifetime()
-                    .MayBeAssignableTo<IBotCommand>()
-                    .HaveAttribute<BotCommandDescriptorAttribute>();
-            }
+            var scanner = new AssemblyScanner(assembly);
+            var commandTypes = scanner.ScanForTypesThat()
+                .MayBeAssignableTo<IBotCommand>()
+                .HaveAttribute<BotCommandDescriptorAttribute>()
+                .ArePublic()
+                .ToList();
 
+            foreach (var commandType in commandTypes.Select(ti => ti.AsType()))
+            {
+                _commandTypes[commandType.GetBotCommandDescriptorAttribute().CommandName] = commandType;
+                ServiceCollection.AddScoped(commandType);
+            }
+            
             return this;
         }
 
@@ -96,10 +103,9 @@ namespace Kysect.BotFramework.Core
         {
             if (!_dbContextInitialized)
                 throw new BotValidException("Database context options was not initialized");
-
+            ServiceCollection.AddSingleton(new CommandTypeProvider(_commandTypes, _caseSensitive));
             ServiceProvider serviceProvider = ServiceCollection.BuildServiceProvider();
             var commandHandler = new CommandHandler(serviceProvider);
-            commandHandler.SetCaseSensitive(_caseSensitive);
             return new BotManager(apiProvider, commandHandler, _prefix, _sendErrorLogToUser, serviceProvider);
         }
     }
