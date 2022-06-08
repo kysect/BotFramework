@@ -71,10 +71,10 @@ namespace Kysect.BotFramework.Core
 
         private async Task ProcessMessage(BotNewMessageEventArgs e)
         {
-            var dbContext =  _serviceProvider.GetRequiredService<BotFrameworkDbContext>();
+            var dbContext =  _serviceProvider.GetService<BotFrameworkDbContext>();
             DialogContext context = e.SenderInfo.GetOrCreateDialogContext(dbContext);
+
             var botEventArgs = new BotEventArgs(e.Message, context);
-            
             CommandContainer commandContainer = _commandParser.ParseCommand(botEventArgs);
 
             if (!commandContainer.StartsWithPrefix(_prefix))
@@ -98,8 +98,11 @@ namespace Kysect.BotFramework.Core
 
             IBotMessage message = await _commandHandler.ExecuteCommand(commandContainer);
 
-            await commandContainer.Context.SaveChangesAsync(dbContext);
-            
+            if (dbContext is not null)
+            {
+                await commandContainer.Context.SaveChangesAsync(dbContext);
+            }
+
             SenderInfo sender = commandContainer.Context.SenderInfo;
 
             await message.SendAsync(_apiProvider, sender);

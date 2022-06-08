@@ -12,15 +12,20 @@ namespace Kysect.BotFramework.Core.Contexts
         private readonly long _senderInfoId;
         public SenderInfo SenderInfo { get; }
 
-        public DialogContext(int state, long senderInfoId, ContextType contextType, SenderInfo senderInfo)
+        public DialogContext(ContextType contextType, SenderInfo senderInfo)
         {
-            State = state;
-            _senderInfoId = senderInfoId;
             _contextType = contextType;
             SenderInfo = senderInfo;
         }
 
-        internal async  Task SaveChangesAsync(BotFrameworkDbContext dbContext)
+        public DialogContext(int state, long senderInfoId, ContextType contextType, SenderInfo senderInfo)
+            : this(contextType, senderInfo)
+        {
+            State = state;
+            _senderInfoId = senderInfoId;
+        }
+
+        internal async Task SaveChangesAsync(BotFrameworkDbContext dbContext)
         {
             DialogContextEntity context = dbContext.DialogContexts.FirstOrDefault(x => x.SenderInfoId == _senderInfoId && x.ContextType == _contextType);
             context.State = State;

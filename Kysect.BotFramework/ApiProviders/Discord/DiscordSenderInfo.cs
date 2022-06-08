@@ -27,8 +27,12 @@ namespace Kysect.BotFramework.ApiProviders.Discord
 
         internal override DialogContext GetOrCreateDialogContext(BotFrameworkDbContext dbContext)
         {
-            var contextSenderInfo = DiscordSenderInfoEntity.GetOrCreate(this, dbContext);
+            if (dbContext is null)
+            {
+                return new DialogContext(ContextType.Discord, this);
+            }
 
+            var contextSenderInfo = DiscordSenderInfoEntity.GetOrCreate(this, dbContext);
             var contextModel = DialogContextEntity.GetOrCreate(contextSenderInfo, ContextType.Discord, dbContext);
             
             return new DialogContext(contextModel.State, contextModel.SenderInfoId, ContextType.Discord, this);
