@@ -6,6 +6,7 @@ using FluentScanning;
 using Kysect.BotFramework.ApiProviders;
 using Kysect.BotFramework.Core.CommandInvoking;
 using Kysect.BotFramework.Core.Commands;
+using Kysect.BotFramework.Core.Contexts.Providers;
 using Kysect.BotFramework.Core.Exceptions;
 using Kysect.BotFramework.Core.Tools;
 using Kysect.BotFramework.Core.Tools.Extensions;
@@ -24,6 +25,8 @@ namespace Kysect.BotFramework.Core
         private char _prefix = '\0';
         private bool _sendErrorLogToUser;
         private readonly Dictionary<string, Type> _commandTypes = new Dictionary<string, Type>();
+
+        private bool _dbContextInitialized = false;
 
         //FK: we should make this private, shouldn't we?
         public ServiceCollection ServiceCollection { get; } = new ServiceCollection();
@@ -93,11 +96,21 @@ namespace Kysect.BotFramework.Core
         public BotManagerBuilder SetDatabaseOptions(Action<DbContextOptionsBuilder> optionsAction)
         {
             ServiceCollection.AddDbContext<BotFrameworkDbContext>(optionsAction);
+            ServiceCollection.AddSingleton<IDialogContextProvider>(p =>
+                new StorageDialogContextProvider(p.GetRequiredService<BotFrameworkDbContext>()));
+
+            _dbContextInitialized = true;
             return this;
         }
 
         public BotManager Build(IBotApiProvider apiProvider)
         {
+            if (!_dbContextInitialized)
+            {
+                var dialogContextProvider = new NullDialogContextProvider();
+                ServiceCollection.AddSingleton<IDialogContextProvider>(dialogContextProvider);
+            }
+
             ServiceCollection.AddSingleton(new CommandTypeProvider(_commandTypes, _caseSensitive));
             ServiceProvider serviceProvider = ServiceCollection.BuildServiceProvider();
             var commandHandler = new CommandHandler(serviceProvider);

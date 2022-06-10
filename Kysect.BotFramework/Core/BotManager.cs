@@ -5,6 +5,7 @@ using Kysect.BotFramework.Core.BotMessages;
 using Kysect.BotFramework.Core.CommandInvoking;
 using Kysect.BotFramework.Core.Commands;
 using Kysect.BotFramework.Core.Contexts;
+using Kysect.BotFramework.Core.Contexts.Providers;
 using Kysect.BotFramework.Core.Exceptions;
 using Kysect.BotFramework.Core.Tools;
 using Kysect.BotFramework.Core.Tools.Loggers;
@@ -71,10 +72,14 @@ namespace Kysect.BotFramework.Core
 
         private async Task ProcessMessage(BotNewMessageEventArgs e)
         {
-            var dbContext =  _serviceProvider.GetService<BotFrameworkDbContext>();
-            DialogContext context = e.SenderInfo.GetOrCreateDialogContext(dbContext);
+            SenderInfo sender = e.SenderInfo;
 
-            var botEventArgs = new BotEventArgs(e.Message, context);
+            var dialogContextProvider = _serviceProvider.GetRequiredService<IDialogContextProvider>();
+            dialogContextProvider.SenderInfo = sender;
+
+            DialogContext dialogContext = dialogContextProvider.GetDialogContext();
+
+            var botEventArgs = new BotEventArgs(e.Message, _serviceProvider);
             CommandContainer commandContainer = _commandParser.ParseCommand(botEventArgs);
 
             if (!commandContainer.StartsWithPrefix(_prefix))
@@ -98,14 +103,7 @@ namespace Kysect.BotFramework.Core
 
             IBotMessage message = await _commandHandler.ExecuteCommand(commandContainer);
 
-            if (dbContext is not null)
-            {
-                await commandContainer.Context.SaveChangesAsync(dbContext);
-            }
-
-            SenderInfo sender = commandContainer.Context.SenderInfo;
-
-            await message.SendAsync(_apiProvider, sender);
+            await message.SendAsync(_apiProvider, dialogContext.SenderInfo);
         }
 
         private async Task HandlerError(BotException exception, BotNewMessageEventArgs botEventArgs)
