@@ -3,19 +3,19 @@ using System.Collections.Generic;
 using System.Linq;
 using Kysect.BotFramework.Core.BotMedia;
 using Kysect.BotFramework.Core.BotMessages;
-using Kysect.BotFramework.Core.Contexts;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Kysect.BotFramework.Core
 {
     public class BotEventArgs : EventArgs
     {
         public IBotMessage Message { get; }
-        public DialogContext Context { get; }
+        public ServiceProvider ServiceProvider { get; }
 
-        public BotEventArgs(IBotMessage message, DialogContext context)
+        public BotEventArgs(IBotMessage message, ServiceProvider serviceProvider)
         {
             Message = message;
-            Context = context;
+            ServiceProvider = serviceProvider;
         }
 
         public string FindCommandName()

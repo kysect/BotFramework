@@ -1,22 +1,23 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Kysect.BotFramework.Core.BotMedia;
-using Kysect.BotFramework.Core.Contexts;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Kysect.BotFramework.Core.Commands
 {
     public class CommandContainer
     {
         public string CommandName { get; private set; }
-        public DialogContext Context { get; }
+        public ServiceProvider ServiceProvider { get; }
         public List<string> Arguments { get; }
         public List<IBotMediaFile> MediaFiles { get; }
 
-        public CommandContainer(string commandName, DialogContext context, List<string> arguments,
+        public CommandContainer(string commandName, ServiceProvider serviceProvider, List<string> arguments,
             List<IBotMediaFile> mediaFiles)
         {
             CommandName = commandName;
-            Context = context;
+            ServiceProvider = serviceProvider;
             Arguments = arguments;
             MediaFiles = mediaFiles;
         }
