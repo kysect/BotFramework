@@ -27,7 +27,7 @@ namespace Kysect.BotFramework.ApiProviders.Telegram
             var contextSenderInfo = TelegramSenderInfoEntity.GetOrCreate(this, dbContext);
             var contextModel = DialogContextEntity.GetOrCreate(contextSenderInfo, ContextType, dbContext);
             
-            return new DialogContext(contextModel.State, contextModel.SenderInfoId, this, dbContext);
+            return new DialogContext(contextModel.State, contextModel.SenderInfoId, this);
         }
     }
 }
