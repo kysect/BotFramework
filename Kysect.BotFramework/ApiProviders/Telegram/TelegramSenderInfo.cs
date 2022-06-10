@@ -6,6 +6,8 @@ namespace Kysect.BotFramework.ApiProviders.Telegram
 {
     public class TelegramSenderInfo : SenderInfo
     {
+        public override ContextType ContextType => ContextType.Telegram;
+
         public TelegramSenderInfo(long chatId, long userSenderId, string userSenderUsername, bool isAdmin)
             : base(chatId, userSenderId, userSenderUsername, isAdmin)
         { }
@@ -22,15 +24,10 @@ namespace Kysect.BotFramework.ApiProviders.Telegram
 
         internal override DialogContext GetOrCreateDialogContext(BotFrameworkDbContext dbContext)
         {
-            if (dbContext is null)
-            {
-                return new DialogContext(ContextType.Telegram, this);
-            }
-
             var contextSenderInfo = TelegramSenderInfoEntity.GetOrCreate(this, dbContext);
-            var contextModel = DialogContextEntity.GetOrCreate(contextSenderInfo, ContextType.Telegram, dbContext);
+            var contextModel = DialogContextEntity.GetOrCreate(contextSenderInfo, ContextType, dbContext);
             
-            return new DialogContext(contextModel.State, contextModel.SenderInfoId, ContextType.Telegram, this);
+            return new DialogContext(contextModel.State, contextModel.SenderInfoId, this, dbContext);
         }
     }
 }
