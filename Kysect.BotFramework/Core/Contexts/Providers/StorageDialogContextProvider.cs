@@ -1,5 +1,4 @@
 ﻿using Kysect.BotFramework.Data;
-using System.Threading.Tasks;
 
 namespace Kysect.BotFramework.Core.Contexts.Providers;
 
@@ -24,7 +23,4 @@ public class StorageDialogContextProvider : IDialogContextProvider
     }
 
     public DialogContext GetDialogContext() => _currentSenderDialogContext;
-
-    public async Task SaveChangesAsync() =>
-        await _currentSenderDialogContext.SaveChangesAsync(_dbContext);
 }

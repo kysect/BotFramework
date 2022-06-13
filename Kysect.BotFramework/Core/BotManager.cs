@@ -103,8 +103,6 @@ namespace Kysect.BotFramework.Core
 
             IBotMessage message = await _commandHandler.ExecuteCommand(commandContainer);
 
-            await dialogContextProvider.SaveChangesAsync();
-
             await message.SendAsync(_apiProvider, dialogContext.SenderInfo);
         }
 
