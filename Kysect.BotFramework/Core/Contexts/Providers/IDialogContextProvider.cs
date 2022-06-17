@@ -2,7 +2,7 @@
 
 public interface IDialogContextProvider
 {
-    SenderInfo SenderInfo { get; set; }
+    SenderInfo SenderInfo { get; }
 
     DialogContext GetDialogContext();
 }

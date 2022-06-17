@@ -2,7 +2,12 @@
 
 public class NullDialogContextProvider : IDialogContextProvider
 {
-    public SenderInfo SenderInfo { get; set; }
+    private readonly SenderInfoProvider _senderInfoProvider;
+
+    public NullDialogContextProvider(SenderInfoProvider senderInfoProvider)
+        => _senderInfoProvider = senderInfoProvider;
+
+    public SenderInfo SenderInfo => _senderInfoProvider.SenderInfo;
 
     public DialogContext GetDialogContext() => new(SenderInfo);
 }
