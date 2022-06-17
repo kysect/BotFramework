@@ -5,15 +5,14 @@ using Kysect.BotFramework.Core.Commands;
 using Kysect.BotFramework.Core.Tools;
 using Kysect.BotFramework.Core.Tools.Extensions;
 using Kysect.BotFramework.Core.Tools.Loggers;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Kysect.BotFramework.Core.CommandInvoking
 {
     public class CommandHandler
     {
-        private readonly ServiceProvider _serviceProvider;
+        private readonly IServiceProvider _serviceProvider;
 
-        public CommandHandler(ServiceProvider serviceProvider)
+        public CommandHandler(IServiceProvider serviceProvider)
         {
             _serviceProvider = serviceProvider;
         }

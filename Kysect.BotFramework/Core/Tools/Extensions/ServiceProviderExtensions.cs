@@ -7,13 +7,13 @@ namespace Kysect.BotFramework.Core.Tools.Extensions
 {
     internal static class ServiceProviderExtensions
     {
-        private static Type GetCommandType(this ServiceProvider  provider, string commandName)
+        private static Type GetCommandType(this IServiceProvider  provider, string commandName)
         {
             var commandTypeProvider = provider.GetRequiredService<CommandTypeProvider>();
             return commandTypeProvider.GetCommandTypeOrDefault(commandName);
         }
 
-        public static IBotCommand GetCommand(this ServiceProvider provider, string commandName)
+        public static IBotCommand GetCommand(this IServiceProvider provider, string commandName)
         {
             var type = provider.GetCommandType(commandName);
             
@@ -23,7 +23,7 @@ namespace Kysect.BotFramework.Core.Tools.Extensions
             return provider.GetService(type) as IBotCommand;
         }
         
-        public static BotCommandDescriptorAttribute GetCommandDescriptor(this ServiceProvider  provider, string commandName)
+        public static BotCommandDescriptorAttribute GetCommandDescriptor(this IServiceProvider  provider, string commandName)
             => provider.GetCommand(commandName).GetBotCommandDescriptorAttribute();
     }
 }
