@@ -1,6 +1,5 @@
 ﻿using Kysect.BotFramework.Core.Commands;
 using Kysect.BotFramework.Core.Exceptions;
-using Kysect.BotFramework.Core.Tools;
 
 namespace Kysect.BotFramework.Core.CommandInvoking
 {
@@ -15,7 +14,7 @@ namespace Kysect.BotFramework.Core.CommandInvoking
                 throw new CommandNotFoundException($"[{nameof(CommandParser)}]: Message do not contains command name.");
             }
 
-            return new CommandContainer(commandName, botArguments.ServiceProvider, botArguments.GetCommandArguments(),
+            return new CommandContainer(commandName, botArguments.GetCommandArguments(),
                                                   botArguments.GetMediaFiles());
         }
     }
