@@ -2,5 +2,5 @@
 
 public class SenderInfoProvider
 {
-    public SenderInfo SenderInfo { get; set; }
+    internal SenderInfo SenderInfo { get; set; }
 }
