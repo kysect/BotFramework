@@ -9,7 +9,6 @@ using Kysect.BotFramework.Core.Contexts.Providers;
 using Kysect.BotFramework.Core.Exceptions;
 using Kysect.BotFramework.Core.Tools;
 using Kysect.BotFramework.Core.Tools.Loggers;
-using Kysect.BotFramework.Data;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Kysect.BotFramework.Core
@@ -17,21 +16,18 @@ namespace Kysect.BotFramework.Core
     public class BotManager : IDisposable
     {
         private readonly IBotApiProvider _apiProvider;
-        private readonly CommandHandler _commandHandler;
+        private readonly IServiceProvider _serviceProvider;
         private readonly ICommandParser _commandParser;
         private readonly char _prefix;
         private readonly bool _sendErrorLogToUser;
-        private readonly ServiceProvider _serviceProvider;
 
-        public BotManager(IBotApiProvider apiProvider, CommandHandler commandHandler, char prefix,
-            bool sendErrorLogToUser, ServiceProvider provider)
+        public BotManager(IBotApiProvider apiProvider, IServiceProvider provider, char prefix, bool sendErrorLogToUser)
         {
-            _serviceProvider = provider;
             _apiProvider = apiProvider;
+            _serviceProvider = provider;
             _prefix = prefix;
             _sendErrorLogToUser = sendErrorLogToUser;
             _commandParser = new CommandParser();
-            _commandHandler = commandHandler;
         }
 
         public void Dispose()
@@ -72,14 +68,16 @@ namespace Kysect.BotFramework.Core
 
         private async Task ProcessMessage(BotNewMessageEventArgs e)
         {
-            SenderInfo sender = e.SenderInfo;
+            using var scope = _serviceProvider.CreateScope();
+            var commandHandler = new CommandHandler(scope.ServiceProvider);
+            
+            var senderInfoProvider = scope.ServiceProvider.GetRequiredService<SenderInfoProvider>();
+            senderInfoProvider.SenderInfo = e.SenderInfo;
 
-            var dialogContextProvider = _serviceProvider.GetRequiredService<IDialogContextProvider>();
-            dialogContextProvider.SenderInfo = sender;
-
+            var dialogContextProvider = scope.ServiceProvider.GetRequiredService<IDialogContextProvider>();
             DialogContext dialogContext = dialogContextProvider.GetDialogContext();
 
-            var botEventArgs = new BotEventArgs(e.Message, _serviceProvider);
+            var botEventArgs = new BotEventArgs(e.Message);
             CommandContainer commandContainer = _commandParser.ParseCommand(botEventArgs);
 
             if (!commandContainer.StartsWithPrefix(_prefix))
@@ -89,19 +87,19 @@ namespace Kysect.BotFramework.Core
 
             commandContainer.RemovePrefix(_prefix);
 
-            Result checkResult = _commandHandler.CheckArgsCount(commandContainer);
+            Result checkResult = commandHandler.CheckArgsCount(commandContainer);
             if (!checkResult.IsSuccess)
             {
                 throw new CommandArgumentsException(checkResult.Message);
             }
 
-            checkResult = _commandHandler.CanCommandBeExecuted(commandContainer);
+            checkResult = commandHandler.CanCommandBeExecuted(commandContainer);
             if (!checkResult.IsSuccess)
             {
                 throw new CommandCantBeExecutedException(checkResult.Message);
             }
 
-            IBotMessage message = await _commandHandler.ExecuteCommand(commandContainer);
+            IBotMessage message = await commandHandler.ExecuteCommand(commandContainer);
 
             await message.SendAsync(_apiProvider, dialogContext.SenderInfo);
         }
