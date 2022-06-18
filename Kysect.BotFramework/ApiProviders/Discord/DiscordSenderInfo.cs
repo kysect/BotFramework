@@ -8,7 +8,7 @@ namespace Kysect.BotFramework.ApiProviders.Discord
     {
         public ulong GuildId { get; }
 
-        public override ContextType ContextType => ContextType.Discord;
+        internal override ContextType ContextType => ContextType.Discord;
 
         public DiscordSenderInfo(long chatId, long userSenderId, string userSenderUsername, bool isAdmin, ulong guildId)
             : base(chatId, userSenderId, userSenderUsername, isAdmin)

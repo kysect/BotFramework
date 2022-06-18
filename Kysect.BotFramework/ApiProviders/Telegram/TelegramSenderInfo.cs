@@ -6,7 +6,7 @@ namespace Kysect.BotFramework.ApiProviders.Telegram
 {
     public class TelegramSenderInfo : SenderInfo
     {
-        public override ContextType ContextType => ContextType.Telegram;
+        internal override ContextType ContextType => ContextType.Telegram;
 
         public TelegramSenderInfo(long chatId, long userSenderId, string userSenderUsername, bool isAdmin)
             : base(chatId, userSenderId, userSenderUsername, isAdmin)
