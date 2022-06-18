@@ -5,17 +5,10 @@ namespace Kysect.BotFramework.Core.Contexts.Providers;
 public class StorageDialogContextProvider : IDialogContextProvider
 {
     private readonly BotFrameworkDbContext _dbContext;
-    private readonly SenderInfoProvider _senderInfoProvider;
 
-    public StorageDialogContextProvider(BotFrameworkDbContext dbContext,
-        SenderInfoProvider senderInfoProvider)
-    {
-        _dbContext = dbContext;
-        _senderInfoProvider = senderInfoProvider;
-    }
+    public StorageDialogContextProvider(BotFrameworkDbContext dbContext)
+        => _dbContext = dbContext;
 
-    public SenderInfo SenderInfo => _senderInfoProvider.SenderInfo;
-
-    public DialogContext GetDialogContext()
-        => SenderInfo.GetOrCreateDialogContext(_dbContext);
+    public DialogContext GetDialogContext(SenderInfo senderInfo)
+        => senderInfo.GetOrCreateDialogContext(_dbContext);
 }
