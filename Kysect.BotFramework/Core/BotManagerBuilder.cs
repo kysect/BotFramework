@@ -25,8 +25,6 @@ namespace Kysect.BotFramework.Core
         private bool _sendErrorLogToUser;
         private readonly Dictionary<string, Type> _commandTypes = new Dictionary<string, Type>();
 
-        private bool _dbContextInitialized = false;
-
         //FK: we should make this private, shouldn't we?
         public ServiceCollection ServiceCollection { get; } = new ServiceCollection();
 
@@ -98,17 +96,11 @@ namespace Kysect.BotFramework.Core
                 .AddDbContext<BotFrameworkDbContext>(optionsAction)
                 .AddScoped<IDialogContextProvider, StorageDialogContextProvider>();
 
-            _dbContextInitialized = true;
             return this;
         }
 
         public BotManager Build(IBotApiProvider apiProvider)
         {
-            if (!_dbContextInitialized)
-            {
-                ServiceCollection.AddScoped<IDialogContextProvider, NullDialogContextProvider>();
-            }
-
             ServiceCollection
                 .AddScoped<SenderInfoProvider>()
                 .AddSingleton(new CommandTypeProvider(_commandTypes, _caseSensitive));
