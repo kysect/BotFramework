@@ -101,9 +101,7 @@ namespace Kysect.BotFramework.Core
 
         public BotManager Build(IBotApiProvider apiProvider)
         {
-            ServiceCollection
-                .AddScoped<SenderInfoProvider>()
-                .AddSingleton(new CommandTypeProvider(_commandTypes, _caseSensitive));
+            ServiceCollection.AddSingleton(new CommandTypeProvider(_commandTypes, _caseSensitive));
 
             ServiceProvider serviceProvider = ServiceCollection.BuildServiceProvider();
             return new BotManager(apiProvider, serviceProvider, _prefix, _sendErrorLogToUser);

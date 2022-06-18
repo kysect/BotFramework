@@ -4,8 +4,6 @@ using Kysect.BotFramework.ApiProviders;
 using Kysect.BotFramework.Core.BotMessages;
 using Kysect.BotFramework.Core.CommandInvoking;
 using Kysect.BotFramework.Core.Commands;
-using Kysect.BotFramework.Core.Contexts;
-using Kysect.BotFramework.Core.Contexts.Providers;
 using Kysect.BotFramework.Core.Exceptions;
 using Kysect.BotFramework.Core.Tools;
 using Kysect.BotFramework.Core.Tools.Loggers;
@@ -71,10 +69,7 @@ namespace Kysect.BotFramework.Core
             using var scope = _serviceProvider.CreateScope();
             var commandHandler = new CommandHandler(scope.ServiceProvider);
             
-            var senderInfoProvider = scope.ServiceProvider.GetRequiredService<SenderInfoProvider>();
-            senderInfoProvider.SenderInfo = e.SenderInfo;
-
-            var botEventArgs = new BotEventArgs(e.Message);
+            var botEventArgs = new BotEventArgs(e.Message, e.SenderInfo, scope.ServiceProvider);
             CommandContainer commandContainer = _commandParser.ParseCommand(botEventArgs);
 
             if (!commandContainer.StartsWithPrefix(_prefix))
