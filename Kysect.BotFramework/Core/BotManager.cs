@@ -74,9 +74,6 @@ namespace Kysect.BotFramework.Core
             var senderInfoProvider = scope.ServiceProvider.GetRequiredService<SenderInfoProvider>();
             senderInfoProvider.SenderInfo = e.SenderInfo;
 
-            var dialogContextProvider = scope.ServiceProvider.GetRequiredService<IDialogContextProvider>();
-            DialogContext dialogContext = dialogContextProvider.GetDialogContext();
-
             var botEventArgs = new BotEventArgs(e.Message);
             CommandContainer commandContainer = _commandParser.ParseCommand(botEventArgs);
 
@@ -101,7 +98,7 @@ namespace Kysect.BotFramework.Core
 
             IBotMessage message = await commandHandler.ExecuteCommand(commandContainer);
 
-            await message.SendAsync(_apiProvider, dialogContext.SenderInfo);
+            await message.SendAsync(_apiProvider, e.SenderInfo);
         }
 
         private async Task HandlerError(BotException exception, BotNewMessageEventArgs botEventArgs)
