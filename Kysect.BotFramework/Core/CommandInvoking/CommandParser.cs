@@ -5,7 +5,7 @@ namespace Kysect.BotFramework.Core.CommandInvoking
 {
     public class CommandParser : ICommandParser
     {
-        public CommandContainer ParseCommand(BotEventArgs botArguments)
+        public CommandContainer ParseCommand(BotNewMessageEventArgs botArguments)
         {
             string commandName = botArguments.FindCommandName();
 
@@ -15,7 +15,7 @@ namespace Kysect.BotFramework.Core.CommandInvoking
             }
 
             return new CommandContainer(commandName, botArguments.GetCommandArguments(), botArguments.GetMediaFiles(),
-                botArguments.SenderInfo, botArguments.ServiceProvider);
+                botArguments.SenderInfo);
         }
     }
 }

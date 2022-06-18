@@ -69,8 +69,7 @@ namespace Kysect.BotFramework.Core
             using var scope = _serviceProvider.CreateScope();
             var commandHandler = new CommandHandler(scope.ServiceProvider);
             
-            var botEventArgs = new BotEventArgs(e.Message, e.SenderInfo, scope.ServiceProvider);
-            CommandContainer commandContainer = _commandParser.ParseCommand(botEventArgs);
+            CommandContainer commandContainer = _commandParser.ParseCommand(e);
 
             if (!commandContainer.StartsWithPrefix(_prefix))
             {
