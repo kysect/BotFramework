@@ -10,30 +10,23 @@ namespace Kysect.BotFramework.Core.Contexts
         
         private readonly long _senderInfoId;
 
-        private int? _state;
+        private int _state;
 
         public SenderInfo SenderInfo { get; }
 
-        public int? State
+        public int State
         {
             get => _state;
             set
             {
                 _state = value;
-
-                if (_dbContext is not null)
-                {
-                    SaveChanges();
-                }
+                SaveChanges();
             }
         }
 
-        public DialogContext(SenderInfo senderInfo)
-            => SenderInfo = senderInfo;
-
         public DialogContext(int state, long senderInfoId, SenderInfo senderInfo, BotFrameworkDbContext dbContext)
-            : this(senderInfo)
         {
+            SenderInfo = senderInfo;
             _senderInfoId = senderInfoId;
             _state = state;
             _dbContext = dbContext;
@@ -46,7 +39,7 @@ namespace Kysect.BotFramework.Core.Contexts
                     x.SenderInfoId == _senderInfoId
                     && x.ContextType == SenderInfo.ContextType);
 
-            context!.State = State.GetValueOrDefault();
+            context!.State = State;
             _dbContext.DialogContexts.Update(context);
             _dbContext.SaveChanges();
         }
