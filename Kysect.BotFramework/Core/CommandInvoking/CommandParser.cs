@@ -5,7 +5,7 @@ namespace Kysect.BotFramework.Core.CommandInvoking
 {
     public class CommandParser : ICommandParser
     {
-        public CommandContainer ParseCommand(BotNewMessageEventArgs botArguments)
+        public CommandContainer ParseCommand(BotEventArgs botArguments)
         {
             string commandName = botArguments.FindCommandName();
 

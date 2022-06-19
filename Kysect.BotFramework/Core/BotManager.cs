@@ -38,14 +38,14 @@ namespace Kysect.BotFramework.Core
             _apiProvider.OnMessage += ApiProviderOnMessage;
         }
 
-        private void ApiProviderOnMessage(object sender, BotNewMessageEventArgs e)
+        private void ApiProviderOnMessage(object sender, BotEventArgs e)
         {
 #pragma warning disable CS4014
             RunCommandProcessing(e);
 #pragma warning restore CS4014
         }
 
-        private async Task RunCommandProcessing(BotNewMessageEventArgs e)
+        private async Task RunCommandProcessing(BotEventArgs e)
         {
             try
             {
@@ -64,7 +64,7 @@ namespace Kysect.BotFramework.Core
             }
         }
 
-        private async Task ProcessMessage(BotNewMessageEventArgs e)
+        private async Task ProcessMessage(BotEventArgs e)
         {
             using var scope = _serviceProvider.CreateScope();
             var commandHandler = new CommandHandler(scope.ServiceProvider);
@@ -95,7 +95,7 @@ namespace Kysect.BotFramework.Core
             await message.SendAsync(_apiProvider, e.SenderInfo);
         }
 
-        private async Task HandlerError(BotException exception, BotNewMessageEventArgs botEventArgs)
+        private async Task HandlerError(BotException exception, BotEventArgs botEventArgs)
         {
             LoggerHolder.Instance.Error(exception.Message);
 

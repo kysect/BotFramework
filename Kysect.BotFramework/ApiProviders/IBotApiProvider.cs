@@ -10,7 +10,7 @@ namespace Kysect.BotFramework.ApiProviders
 {
     public interface IBotApiProvider
     {
-        event EventHandler<BotNewMessageEventArgs> OnMessage;
+        event EventHandler<BotEventArgs> OnMessage;
 
         void Restart();
         Task<Result> SendMultipleMediaAsync(List<IBotMediaFile> mediaFiles, string text, SenderInfo sender);

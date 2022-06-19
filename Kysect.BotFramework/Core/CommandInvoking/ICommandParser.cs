@@ -4,6 +4,6 @@ namespace Kysect.BotFramework.Core.CommandInvoking
 {
     public interface ICommandParser
     {
-        CommandContainer ParseCommand(BotNewMessageEventArgs botArguments);
+        CommandContainer ParseCommand(BotEventArgs botArguments);
     }
 }
