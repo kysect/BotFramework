@@ -8,6 +8,8 @@ namespace Kysect.BotFramework.ApiProviders.Discord
     {
         public ulong GuildId { get; }
 
+        internal override ContextType ContextType => ContextType.Discord;
+
         public DiscordSenderInfo(long chatId, long userSenderId, string userSenderUsername, bool isAdmin, ulong guildId)
             : base(chatId, userSenderId, userSenderUsername, isAdmin)
         {
@@ -28,10 +30,9 @@ namespace Kysect.BotFramework.ApiProviders.Discord
         internal override DialogContext GetOrCreateDialogContext(BotFrameworkDbContext dbContext)
         {
             var contextSenderInfo = DiscordSenderInfoEntity.GetOrCreate(this, dbContext);
-
-            var contextModel = DialogContextEntity.GetOrCreate(contextSenderInfo, ContextType.Discord, dbContext);
+            var contextModel = DialogContextEntity.GetOrCreate(contextSenderInfo, ContextType, dbContext);
             
-            return new DialogContext(contextModel.State, contextModel.SenderInfoId, ContextType.Discord, this);
+            return new DialogContext(contextModel.State, contextModel.SenderInfoId, this, dbContext);
         }
     }
 }

@@ -25,7 +25,7 @@ namespace Kysect.BotFramework.ApiProviders.Discord
             Initialize();
         }
 
-        public event EventHandler<BotNewMessageEventArgs> OnMessage;
+        public event EventHandler<BotEventArgs> OnMessage;
 
         public void Restart()
         {
@@ -75,7 +75,7 @@ namespace Kysect.BotFramework.ApiProviders.Discord
             IBotMessage botMessage = ParseMessage(message, context);
 
             OnMessage?.Invoke(context.Client,
-                              new BotNewMessageEventArgs(
+                              new BotEventArgs(
                                   botMessage,
                                   new DiscordSenderInfo(
                                       (long) context.Channel.Id,

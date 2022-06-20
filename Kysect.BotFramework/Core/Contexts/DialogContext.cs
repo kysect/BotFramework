@@ -1,5 +1,4 @@
 ﻿using System.Linq;
-using System.Threading.Tasks;
 using Kysect.BotFramework.Data;
 using Kysect.BotFramework.Data.Entities;
 
@@ -7,25 +6,42 @@ namespace Kysect.BotFramework.Core.Contexts
 {
     public class DialogContext
     {
-        public int State { get; set; }
-        private readonly ContextType _contextType;
+        private readonly BotFrameworkDbContext _dbContext;
+        
         private readonly long _senderInfoId;
+
+        private int _state;
+
         public SenderInfo SenderInfo { get; }
 
-        public DialogContext(int state, long senderInfoId, ContextType contextType, SenderInfo senderInfo)
+        public int State
         {
-            State = state;
-            _senderInfoId = senderInfoId;
-            _contextType = contextType;
-            SenderInfo = senderInfo;
+            get => _state;
+            set
+            {
+                _state = value;
+                SaveChanges();
+            }
         }
 
-        internal async  Task SaveChangesAsync(BotFrameworkDbContext dbContext)
+        public DialogContext(int state, long senderInfoId, SenderInfo senderInfo, BotFrameworkDbContext dbContext)
         {
-            DialogContextEntity context = dbContext.DialogContexts.FirstOrDefault(x => x.SenderInfoId == _senderInfoId && x.ContextType == _contextType);
-            context.State = State;
-            dbContext.DialogContexts.Update(context);
-            await dbContext.SaveChangesAsync();
+            SenderInfo = senderInfo;
+            _senderInfoId = senderInfoId;
+            _state = state;
+            _dbContext = dbContext;
+        }
+
+        private void SaveChanges()
+        {
+            DialogContextEntity context = _dbContext.DialogContexts.FirstOrDefault(
+                x =>
+                    x.SenderInfoId == _senderInfoId
+                    && x.ContextType == SenderInfo.ContextType);
+
+            context!.State = State;
+            _dbContext.DialogContexts.Update(context);
+            _dbContext.SaveChanges();
         }
     }
 }

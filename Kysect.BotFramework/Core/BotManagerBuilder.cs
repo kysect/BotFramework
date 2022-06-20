@@ -4,8 +4,8 @@ using System.Linq;
 using System.Reflection;
 using FluentScanning;
 using Kysect.BotFramework.ApiProviders;
-using Kysect.BotFramework.Core.CommandInvoking;
 using Kysect.BotFramework.Core.Commands;
+using Kysect.BotFramework.Core.Contexts.Providers;
 using Kysect.BotFramework.Core.Exceptions;
 using Kysect.BotFramework.Core.Tools;
 using Kysect.BotFramework.Core.Tools.Extensions;
@@ -24,8 +24,6 @@ namespace Kysect.BotFramework.Core
         private char _prefix = '\0';
         private bool _sendErrorLogToUser;
         private readonly Dictionary<string, Type> _commandTypes = new Dictionary<string, Type>();
-
-        private bool _dbContextInitialized = false;
 
         //FK: we should make this private, shouldn't we?
         public ServiceCollection ServiceCollection { get; } = new ServiceCollection();
@@ -94,19 +92,19 @@ namespace Kysect.BotFramework.Core
 
         public BotManagerBuilder SetDatabaseOptions(Action<DbContextOptionsBuilder> optionsAction)
         {
-            ServiceCollection.AddDbContext<BotFrameworkDbContext>(optionsAction);
-            _dbContextInitialized = true;
+            ServiceCollection
+                .AddDbContext<BotFrameworkDbContext>(optionsAction)
+                .AddScoped<IDialogContextProvider, StorageDialogContextProvider>();
+
             return this;
         }
 
         public BotManager Build(IBotApiProvider apiProvider)
         {
-            if (!_dbContextInitialized)
-                throw new BotValidException("Database context options was not initialized");
             ServiceCollection.AddSingleton(new CommandTypeProvider(_commandTypes, _caseSensitive));
+
             ServiceProvider serviceProvider = ServiceCollection.BuildServiceProvider();
-            var commandHandler = new CommandHandler(serviceProvider);
-            return new BotManager(apiProvider, commandHandler, _prefix, _sendErrorLogToUser, serviceProvider);
+            return new BotManager(apiProvider, serviceProvider, _prefix, _sendErrorLogToUser);
         }
     }
 }

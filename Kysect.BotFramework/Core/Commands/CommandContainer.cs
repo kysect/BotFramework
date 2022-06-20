@@ -8,17 +8,17 @@ namespace Kysect.BotFramework.Core.Commands
     public class CommandContainer
     {
         public string CommandName { get; private set; }
-        public DialogContext Context { get; }
         public List<string> Arguments { get; }
         public List<IBotMediaFile> MediaFiles { get; }
+        public SenderInfo SenderInfo { get; }
 
-        public CommandContainer(string commandName, DialogContext context, List<string> arguments,
-            List<IBotMediaFile> mediaFiles)
+        public CommandContainer(string commandName, List<string> arguments, List<IBotMediaFile> mediaFiles,
+            SenderInfo senderInfo)
         {
             CommandName = commandName;
-            Context = context;
             Arguments = arguments;
             MediaFiles = mediaFiles;
+            SenderInfo = senderInfo;
         }
 
         public bool StartsWithPrefix(char prefix) => prefix == '\0' || CommandName.FirstOrDefault() == prefix;

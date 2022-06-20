@@ -4,11 +4,9 @@ using Kysect.BotFramework.ApiProviders;
 using Kysect.BotFramework.Core.BotMessages;
 using Kysect.BotFramework.Core.CommandInvoking;
 using Kysect.BotFramework.Core.Commands;
-using Kysect.BotFramework.Core.Contexts;
 using Kysect.BotFramework.Core.Exceptions;
 using Kysect.BotFramework.Core.Tools;
 using Kysect.BotFramework.Core.Tools.Loggers;
-using Kysect.BotFramework.Data;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Kysect.BotFramework.Core
@@ -16,21 +14,18 @@ namespace Kysect.BotFramework.Core
     public class BotManager : IDisposable
     {
         private readonly IBotApiProvider _apiProvider;
-        private readonly CommandHandler _commandHandler;
+        private readonly IServiceProvider _serviceProvider;
         private readonly ICommandParser _commandParser;
         private readonly char _prefix;
         private readonly bool _sendErrorLogToUser;
-        private readonly ServiceProvider _serviceProvider;
 
-        public BotManager(IBotApiProvider apiProvider, CommandHandler commandHandler, char prefix,
-            bool sendErrorLogToUser, ServiceProvider provider)
+        public BotManager(IBotApiProvider apiProvider, IServiceProvider provider, char prefix, bool sendErrorLogToUser)
         {
-            _serviceProvider = provider;
             _apiProvider = apiProvider;
+            _serviceProvider = provider;
             _prefix = prefix;
             _sendErrorLogToUser = sendErrorLogToUser;
             _commandParser = new CommandParser();
-            _commandHandler = commandHandler;
         }
 
         public void Dispose()
@@ -43,14 +38,14 @@ namespace Kysect.BotFramework.Core
             _apiProvider.OnMessage += ApiProviderOnMessage;
         }
 
-        private void ApiProviderOnMessage(object sender, BotNewMessageEventArgs e)
+        private void ApiProviderOnMessage(object sender, BotEventArgs e)
         {
 #pragma warning disable CS4014
             RunCommandProcessing(e);
 #pragma warning restore CS4014
         }
 
-        private async Task RunCommandProcessing(BotNewMessageEventArgs e)
+        private async Task RunCommandProcessing(BotEventArgs e)
         {
             try
             {
@@ -69,13 +64,12 @@ namespace Kysect.BotFramework.Core
             }
         }
 
-        private async Task ProcessMessage(BotNewMessageEventArgs e)
+        private async Task ProcessMessage(BotEventArgs e)
         {
-            var dbContext =  _serviceProvider.GetRequiredService<BotFrameworkDbContext>();
-            DialogContext context = e.SenderInfo.GetOrCreateDialogContext(dbContext);
-            var botEventArgs = new BotEventArgs(e.Message, context);
+            using var scope = _serviceProvider.CreateScope();
+            var commandHandler = new CommandHandler(scope.ServiceProvider);
             
-            CommandContainer commandContainer = _commandParser.ParseCommand(botEventArgs);
+            CommandContainer commandContainer = _commandParser.ParseCommand(e);
 
             if (!commandContainer.StartsWithPrefix(_prefix))
             {
@@ -84,28 +78,24 @@ namespace Kysect.BotFramework.Core
 
             commandContainer.RemovePrefix(_prefix);
 
-            Result checkResult = _commandHandler.CheckArgsCount(commandContainer);
+            Result checkResult = commandHandler.CheckArgsCount(commandContainer);
             if (!checkResult.IsSuccess)
             {
                 throw new CommandArgumentsException(checkResult.Message);
             }
 
-            checkResult = _commandHandler.CanCommandBeExecuted(commandContainer);
+            checkResult = commandHandler.CanCommandBeExecuted(commandContainer);
             if (!checkResult.IsSuccess)
             {
                 throw new CommandCantBeExecutedException(checkResult.Message);
             }
 
-            IBotMessage message = await _commandHandler.ExecuteCommand(commandContainer);
+            IBotMessage message = await commandHandler.ExecuteCommand(commandContainer);
 
-            await commandContainer.Context.SaveChangesAsync(dbContext);
-            
-            SenderInfo sender = commandContainer.Context.SenderInfo;
-
-            await message.SendAsync(_apiProvider, sender);
+            await message.SendAsync(_apiProvider, e.SenderInfo);
         }
 
-        private async Task HandlerError(BotException exception, BotNewMessageEventArgs botEventArgs)
+        private async Task HandlerError(BotException exception, BotEventArgs botEventArgs)
         {
             LoggerHolder.Instance.Error(exception.Message);
 

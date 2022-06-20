@@ -9,6 +9,8 @@ namespace Kysect.BotFramework.Core.Contexts
         public string UserSenderUsername { get; internal set; }
         public bool IsAdmin { get; internal set; }
 
+        internal abstract ContextType ContextType { get; }
+
         protected SenderInfo(long chatId, long userSenderId, string userSenderUsername, bool isAdmin)
         {
             ChatId = chatId;
