@@ -104,7 +104,7 @@ namespace Kysect.BotFramework.Core
             ServiceCollection.AddSingleton(new CommandTypeProvider(_commandTypes, _caseSensitive));
 
             ServiceProvider serviceProvider = ServiceCollection.BuildServiceProvider();
-            serviceProvider.CheckCommandsCorrectness(_commandTypes.Values);
+            serviceProvider.ValidateCommands(_commandTypes.Values);
             return new BotManager(apiProvider, serviceProvider, _prefix, _sendErrorLogToUser);
         }
     }

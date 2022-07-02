@@ -27,7 +27,7 @@ namespace Kysect.BotFramework.Core.Tools.Extensions
             return provider.GetService(type) as IBotCommand;
         }
 
-        public static void CheckCommandsCorrectness(this IServiceProvider provider,
+        public static void ValidateCommands(this IServiceProvider provider,
             IEnumerable<Type> commandTypes)
             => commandTypes
                 .ToList()
@@ -47,7 +47,8 @@ namespace Kysect.BotFramework.Core.Tools.Extensions
 
                             if (!property.CanWrite)
                             {
-                                throw new Exception($"Argument property {n} in command {c} can not be set");
+                                throw new Exception(
+                                    $"Argument property {n} in command {c} can not be set");
                             }
                         })
                     );

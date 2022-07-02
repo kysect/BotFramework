@@ -1,8 +1,6 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Kysect.BotFramework.Core.BotMessages;
 using Kysect.BotFramework.Core.Tools;
-using Kysect.BotFramework.Core.Tools.Extensions;
 
 namespace Kysect.BotFramework.Core.Commands
 {
