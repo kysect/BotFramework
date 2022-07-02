@@ -58,7 +58,6 @@ public class ArgumentHandler
     {
         foreach (var (commandArgumentName, propertyValue) in _arguments)
         {
-            Console.WriteLine(commandArgumentName + " " + propertyValue);
             Result checkResult = TryAssignArgument(commandArgumentName, propertyValue);
             if (checkResult.IsFailed)
             {
