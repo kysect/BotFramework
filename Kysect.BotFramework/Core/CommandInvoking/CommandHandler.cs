@@ -1,4 +1,3 @@
-using System;
 using System.Threading.Tasks;
 using Kysect.BotFramework.Core.BotMessages;
 using Kysect.BotFramework.Core.Commands;
@@ -10,47 +9,48 @@ namespace Kysect.BotFramework.Core.CommandInvoking
 {
     public class CommandHandler
     {
-        private readonly IServiceProvider _serviceProvider;
+        private readonly CommandContainer _args;
+        private readonly IBotCommand _command;
 
-        public CommandHandler(IServiceProvider serviceProvider)
+        public CommandHandler(CommandContainer args, IBotCommand command)
         {
-            _serviceProvider = serviceProvider;
+            _args = args;
+            _command = command;
         }
 
-        public Result CheckArgsCount(CommandContainer args)
+        public Result CheckArguments()
         {
-            var commandDescriptor = _serviceProvider.GetCommandDescriptor(args.CommandName);
+            var argumentHandler = new ArgumentHandler(_args, _command);
 
-            return commandDescriptor.Args.Length == args.Arguments.Count
-                ? Result.Ok() 
-                : Result.Fail("Wrong arguments count");
+            Result checkResult = argumentHandler.CheckArgumentsCount();
+            if (checkResult.IsFailed)
+            {
+                return checkResult;
+            }
+
+            return argumentHandler.TryAssignArguments();
         }
 
-
-        public Result CanCommandBeExecuted(CommandContainer args)
+        public Result CanCommandBeExecuted()
         {
-            IBotCommand command = _serviceProvider.GetCommand(args.CommandName);
-            
-            var descriptor = command.GetBotCommandDescriptorAttribute();
-            Result canExecute = command.CanExecute(args);
+            var descriptor = _command.GetBotCommandDescriptorAttribute();
+            Result canExecute = _command.CanExecute(_args);
 
             return canExecute.IsSuccess
                 ? Result.Ok()
                 : Result.Fail(
-                    $"Command [{descriptor.CommandName}] cannot be executed: {canExecute}");
+                    $"Command [{descriptor.CommandName}] cannot be executed: {canExecute.Message}");
         }
 
-        public async Task<IBotMessage> ExecuteCommand(CommandContainer args)
+        public async Task<IBotMessage> ExecuteCommand()
         {
-            IBotCommand command = _serviceProvider.GetCommand(args.CommandName);
-
             try
             {
-                return await command.Execute(args);
+                return await _command.Execute(_args);
             }
-            catch (Exception e)
+            catch
             {
-                LoggerHolder.Instance.Error("Command execution failed. Command: {args.CommandName}; arguments: {string.Join(", ", args.Arguments)}");
+                LoggerHolder.Instance.Error($"Command execution failed. Command: {_args.CommandName}; arguments: {string.Join(", ", _args.Arguments)}");
                 throw;
             }
         }

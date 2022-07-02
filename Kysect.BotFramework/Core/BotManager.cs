@@ -6,6 +6,7 @@ using Kysect.BotFramework.Core.CommandInvoking;
 using Kysect.BotFramework.Core.Commands;
 using Kysect.BotFramework.Core.Exceptions;
 using Kysect.BotFramework.Core.Tools;
+using Kysect.BotFramework.Core.Tools.Extensions;
 using Kysect.BotFramework.Core.Tools.Loggers;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -67,7 +68,6 @@ namespace Kysect.BotFramework.Core
         private async Task ProcessMessage(BotEventArgs e)
         {
             using var scope = _serviceProvider.CreateScope();
-            var commandHandler = new CommandHandler(scope.ServiceProvider);
             
             CommandContainer commandContainer = _commandParser.ParseCommand(e);
 
@@ -78,19 +78,22 @@ namespace Kysect.BotFramework.Core
 
             commandContainer.RemovePrefix(_prefix);
 
-            Result checkResult = commandHandler.CheckArgsCount(commandContainer);
-            if (!checkResult.IsSuccess)
+            IBotCommand command = scope.ServiceProvider.GetCommand(commandContainer.CommandName);
+            var commandHandler = new CommandHandler(commandContainer, command);
+            
+            Result checkResult = commandHandler.CheckArguments();
+            if (checkResult.IsFailed)
             {
                 throw new CommandArgumentsException(checkResult.Message);
             }
 
-            checkResult = commandHandler.CanCommandBeExecuted(commandContainer);
-            if (!checkResult.IsSuccess)
+            checkResult = commandHandler.CanCommandBeExecuted();
+            if (checkResult.IsFailed)
             {
                 throw new CommandCantBeExecutedException(checkResult.Message);
             }
 
-            IBotMessage message = await commandHandler.ExecuteCommand(commandContainer);
+            IBotMessage message = await commandHandler.ExecuteCommand();
 
             await message.SendAsync(_apiProvider, e.SenderInfo);
         }
