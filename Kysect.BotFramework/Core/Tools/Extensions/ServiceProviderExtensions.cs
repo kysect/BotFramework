@@ -44,7 +44,7 @@ namespace Kysect.BotFramework.Core.Tools.Extensions
                                 throw new Exception(
                                     $"Argument property {n} in command {c} is not accessible");
                             }
-
+                            
                             if (!property.CanWrite)
                             {
                                 throw new Exception(

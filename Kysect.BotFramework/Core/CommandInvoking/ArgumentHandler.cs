@@ -11,34 +11,33 @@ namespace Kysect.BotFramework.Core.CommandInvoking;
 
 public class ArgumentHandler
 {
-    private readonly CommandContainer _args;
     private readonly IBotCommand _command;
+    private readonly List<string> _commandArguments;
 
     private IEnumerable<(string, string)> _arguments;
 
-    public ArgumentHandler(CommandContainer args, IBotCommand command)
+    public ArgumentHandler(IBotCommand command, List<string> commandArguments)
     {
-        _args = args;
         _command = command;
+        _commandArguments = commandArguments;
     }
 
     public Result CheckArgumentsCount()
     {
         List<string> commandArgumentNames = _command.GetBotCommandArgumentNames();
-        List<string> commandArguments = _args.Arguments;
 
-        if (commandArguments.Count > commandArgumentNames.Count)
+        if (_commandArguments.Count > commandArgumentNames.Count)
         {
             return Result.Fail("Too many arguments");
         }
 
-        if (commandArguments.Count != commandArgumentNames.Count
+        if (_commandArguments.Count != commandArgumentNames.Count
             && !_command.GetBotCommandDescriptorAttribute().ArgumentsOptional)
         {
             return Result.Fail("Not enough arguments");
         }
 
-        _arguments = commandArgumentNames.Zip(_args.Arguments, (c, a) => (c, a));
+        _arguments = commandArgumentNames.Zip(_commandArguments, (c, a) => (c, a));
 
         return Result.Ok();
     }

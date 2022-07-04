@@ -79,7 +79,7 @@ namespace Kysect.BotFramework.Core
             commandContainer.RemovePrefix(_prefix);
 
             IBotCommand command = scope.ServiceProvider.GetCommand(commandContainer.CommandName);
-            var commandHandler = new CommandHandler(commandContainer, command);
+            var commandHandler = new CommandHandler(command, commandContainer, e.GetCommandArguments());
             
             Result checkResult = commandHandler.CheckArguments();
             if (checkResult.IsFailed)

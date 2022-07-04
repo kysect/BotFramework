@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Kysect.BotFramework.Core.BotMessages;
 using Kysect.BotFramework.Core.Commands;
@@ -9,18 +10,23 @@ namespace Kysect.BotFramework.Core.CommandInvoking
 {
     public class CommandHandler
     {
-        private readonly CommandContainer _args;
         private readonly IBotCommand _command;
+        private readonly CommandContainer _commandContainer;
+        private readonly List<string> _arguments;
 
-        public CommandHandler(CommandContainer args, IBotCommand command)
+        public CommandHandler(
+            IBotCommand command,
+            CommandContainer commandContainer,
+            List<string> arguments)
         {
-            _args = args;
             _command = command;
+            _commandContainer = commandContainer;
+            _arguments = arguments;
         }
 
         public Result CheckArguments()
         {
-            var argumentHandler = new ArgumentHandler(_args, _command);
+            var argumentHandler = new ArgumentHandler(_command, _arguments);
 
             Result checkResult = argumentHandler.CheckArgumentsCount();
             if (checkResult.IsFailed)
@@ -34,7 +40,7 @@ namespace Kysect.BotFramework.Core.CommandInvoking
         public Result CanCommandBeExecuted()
         {
             var descriptor = _command.GetBotCommandDescriptorAttribute();
-            Result canExecute = _command.CanExecute(_args);
+            Result canExecute = _command.CanExecute(_commandContainer);
 
             return canExecute.IsSuccess
                 ? Result.Ok()
@@ -46,12 +52,12 @@ namespace Kysect.BotFramework.Core.CommandInvoking
         {
             try
             {
-                return await _command.Execute(_args);
+                return await _command.Execute(_commandContainer);
             }
             catch
             {
                 LoggerHolder.Instance.Error(
-                    $"Command execution failed. Command: {_args.CommandName}; arguments: {string.Join(", ", _args.Arguments)}");
+                    $"Command execution failed. Command: {_commandContainer.CommandName}; arguments: {string.Join(", ", _arguments)}");
                 throw;
             }
         }
