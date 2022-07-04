@@ -50,7 +50,8 @@ namespace Kysect.BotFramework.Core.CommandInvoking
             }
             catch
             {
-                LoggerHolder.Instance.Error($"Command execution failed. Command: {_args.CommandName}; arguments: {string.Join(", ", _args.Arguments)}");
+                LoggerHolder.Instance.Error(
+                    $"Command execution failed. Command: {_args.CommandName}; arguments: {string.Join(", ", _args.Arguments)}");
                 throw;
             }
         }

@@ -9,7 +9,9 @@ public class BotCommandDescriptorAttribute : Attribute
     public string Description { get; }
     public OptionalArguments OptionalArguments { get; }
 
-    public BotCommandDescriptorAttribute(string commandName, string description = "",
+    public BotCommandDescriptorAttribute(
+        string commandName,
+        string description = "",
         OptionalArguments optionalArguments = OptionalArguments.None)
     {
         CommandName = commandName;

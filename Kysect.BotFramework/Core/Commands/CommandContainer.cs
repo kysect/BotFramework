@@ -13,7 +13,10 @@ namespace Kysect.BotFramework.Core.Commands
         public List<IBotMediaFile> MediaFiles { get; }
         public SenderInfo SenderInfo { get; }
 
-        public CommandContainer(string commandName, List<string> arguments, List<IBotMediaFile> mediaFiles,
+        public CommandContainer(
+            string commandName,
+            List<string> arguments,
+            List<IBotMediaFile> mediaFiles,
             SenderInfo senderInfo) 
         {
             CommandName = commandName;
