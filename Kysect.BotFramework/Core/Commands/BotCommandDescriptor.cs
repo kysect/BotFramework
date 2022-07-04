@@ -7,15 +7,15 @@ public class BotCommandDescriptorAttribute : Attribute
 {
     public string CommandName { get; }
     public string Description { get; }
-    public OptionalArguments OptionalArguments { get; }
+    public bool ArgumentsOptional { get; }
 
     public BotCommandDescriptorAttribute(
         string commandName,
         string description = "",
-        OptionalArguments optionalArguments = OptionalArguments.None)
+        bool argumentsOptional = false)
     {
         CommandName = commandName;
         Description = description;
-        OptionalArguments = optionalArguments;
+        ArgumentsOptional = argumentsOptional;
     }
 }

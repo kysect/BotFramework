@@ -32,26 +32,15 @@ public class ArgumentHandler
             return Result.Fail("Too many arguments");
         }
 
-        _arguments = commandArgumentNames.Zip(_args.Arguments, (c, a) => (c, a));
-
-        if (commandArguments.Count == commandArgumentNames.Count)
+        if (commandArguments.Count != commandArgumentNames.Count
+            && !_command.GetBotCommandDescriptorAttribute().ArgumentsOptional)
         {
-            return Result.Ok();
+            return Result.Fail("Not enough arguments");
         }
 
-        var optionalArguments = _command.GetBotCommandDescriptorAttribute().OptionalArguments;
-        
-        bool checkResult = optionalArguments switch
-        {
-            OptionalArguments.None => false,
-            OptionalArguments.Last => commandArguments.Count == commandArgumentNames.Count - 1,
-            OptionalArguments.All => commandArguments.Count == 0,
-            _ => throw new ArgumentOutOfRangeException(nameof(optionalArguments))
-        };
+        _arguments = commandArgumentNames.Zip(_args.Arguments, (c, a) => (c, a));
 
-        return checkResult
-            ? Result.Ok()
-            : Result.Fail("Wrong argument count");
+        return Result.Ok();
     }
 
     public Result TryAssignArguments()
