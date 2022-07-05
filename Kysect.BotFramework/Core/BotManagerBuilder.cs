@@ -23,7 +23,7 @@ namespace Kysect.BotFramework.Core
 
         private char _prefix = '\0';
         private bool _sendErrorLogToUser;
-        private readonly Dictionary<string, Type> _commandTypes = new Dictionary<string, Type>();
+        private readonly Dictionary<string, Type> _commandTypes = new();
 
         //FK: we should make this private, shouldn't we?
         public ServiceCollection ServiceCollection { get; } = new ServiceCollection();
@@ -104,6 +104,7 @@ namespace Kysect.BotFramework.Core
             ServiceCollection.AddSingleton(new CommandTypeProvider(_commandTypes, _caseSensitive));
 
             ServiceProvider serviceProvider = ServiceCollection.BuildServiceProvider();
+            serviceProvider.ValidateCommands(_commandTypes.Values);
             return new BotManager(apiProvider, serviceProvider, _prefix, _sendErrorLogToUser);
         }
     }

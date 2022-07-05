@@ -11,10 +11,14 @@ namespace Kysect.BotFramework.Core.CommandInvoking
 
             if (string.IsNullOrWhiteSpace(commandName))
             {
-                throw new CommandNotFoundException($"[{nameof(CommandParser)}]: Message do not contains command name.");
+                throw new CommandNotFoundException(
+                    $"[{nameof(CommandParser)}]: Message do not contains command name.");
             }
 
-            return new CommandContainer(commandName, botArguments.GetCommandArguments(), botArguments.GetMediaFiles(),
+            return new CommandContainer(
+                commandName,
+                botArguments.GetCommandArguments(),
+                botArguments.GetMediaFiles(),
                 botArguments.SenderInfo);
         }
     }

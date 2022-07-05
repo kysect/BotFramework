@@ -7,16 +7,20 @@ namespace Kysect.BotFramework.Core.Commands
 {
     public class CommandContainer
     {
+        private readonly List<string> _arguments;
+
         public string CommandName { get; private set; }
-        public List<string> Arguments { get; }
         public List<IBotMediaFile> MediaFiles { get; }
         public SenderInfo SenderInfo { get; }
 
-        public CommandContainer(string commandName, List<string> arguments, List<IBotMediaFile> mediaFiles,
-            SenderInfo senderInfo)
+        public CommandContainer(
+            string commandName,
+            List<string> arguments,
+            List<IBotMediaFile> mediaFiles,
+            SenderInfo senderInfo) 
         {
             CommandName = commandName;
-            Arguments = arguments;
+            _arguments = arguments;
             MediaFiles = mediaFiles;
             SenderInfo = senderInfo;
         }
@@ -34,6 +38,6 @@ namespace Kysect.BotFramework.Core.Commands
         }
 
         public override string ToString() =>
-            $"[CommandArgumentContainer CommandName:{CommandName}; Arguments:{string.Join(",", Arguments)}]";
+            $"[CommandArgumentContainer CommandName:{CommandName}; Arguments:{string.Join(",", _arguments)}]";
     }
 }
