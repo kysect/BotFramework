@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Kysect.BotFramework.Attributes;
 using Kysect.BotFramework.Core.Commands;
 
 namespace Kysect.BotFramework.Core.Tools.Extensions

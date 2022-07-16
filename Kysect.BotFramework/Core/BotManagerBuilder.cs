@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using FluentScanning;
 using Kysect.BotFramework.ApiProviders;
+using Kysect.BotFramework.Attributes;
 using Kysect.BotFramework.Core.Commands;
 using Kysect.BotFramework.Core.Contexts.Providers;
 using Kysect.BotFramework.Core.Exceptions;

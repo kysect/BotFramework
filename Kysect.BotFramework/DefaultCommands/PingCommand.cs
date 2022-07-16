@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using Kysect.BotFramework.Attributes;
 using Kysect.BotFramework.Core.BotMessages;
 using Kysect.BotFramework.Core.Commands;
 using Kysect.BotFramework.Core.Tools;
