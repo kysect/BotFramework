@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using FluentScanning;
 using Kysect.BotFramework.ApiProviders;
@@ -76,12 +75,12 @@ namespace Kysect.BotFramework.Core
         {
             var scanner = new AssemblyScanner(assembly);
             var commandTypes = scanner.ScanForTypesThat()
-                .MayBeAssignableTo<IBotCommand>()
+                .AreAssignableTo<IBotCommand>()
                 .HaveAttribute<BotCommandDescriptorAttribute>()
                 .ArePublic()
-                .ToList();
+                .AsTypes();
 
-            foreach (var commandType in commandTypes.Select(ti => ti.AsType()))
+            foreach (var commandType in commandTypes)
             {
                 _commandTypes[commandType.GetBotCommandDescriptorAttribute().CommandName] = commandType;
                 ServiceCollection.AddScoped(commandType);
