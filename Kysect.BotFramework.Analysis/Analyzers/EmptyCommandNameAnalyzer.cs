@@ -4,7 +4,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using System.Collections.Immutable;
 
-namespace Kysect.BotFramework.Analyzers;
+namespace Kysect.BotFramework.Analysis.Analyzers;
 
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public class EmptyCommandNameAnalyzer : DiagnosticAnalyzer
@@ -36,8 +36,7 @@ public class EmptyCommandNameAnalyzer : DiagnosticAnalyzer
         var commandDescriptor = classDeclaration.AttributeLists
             .First()
             .Attributes
-            .FirstOrDefault(a =>
-                a.Name.ToString().Contains("BotCommandDescriptor"));
+            .FirstOrDefault(a => a.Name.GetText().ToString() is "BotCommandDescriptor");
 
         if (commandDescriptor is null)
             return;

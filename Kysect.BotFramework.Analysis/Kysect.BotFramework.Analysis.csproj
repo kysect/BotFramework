@@ -7,7 +7,7 @@
 	<Version>0.0.1</Version>
 	<Authors>Kysect</Authors>
 	<RootNamespace>Kysect.BotFramework</RootNamespace>
-	<AssemblyName>Kysect.BotFramework.Internal</AssemblyName>
+	<AssemblyName>Kysect.BotFramework.Analysis</AssemblyName>
 	<PackageLicenseExpression></PackageLicenseExpression>
 	<PackageLicenseFile></PackageLicenseFile>
 	<LangVersion>latest</LangVersion>
@@ -19,18 +19,23 @@
 	<PackageProjectUrl>https://github.com/kysect/BotFramework</PackageProjectUrl>
   </PropertyGroup>
 
+	
+  <ItemGroup>
+	<ProjectReference Include="..\Kysect.BotFramework.Abstractions\Kysect.BotFramework.Abstractions.csproj" />
+  </ItemGroup>
 
+	
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.3" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.2.0" />
   </ItemGroup>
 
-
+	
   <ItemGroup>
     <None Update="tools\*.ps1" CopyToOutputDirectory="PreserveNewest" Pack="true" PackagePath="" />
   </ItemGroup>
 
-
+	
   <ItemGroup>
     <Folder Include="CodeFixes\" />
   </ItemGroup>

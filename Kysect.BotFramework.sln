@@ -9,7 +9,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kysect.BotFramework.Tests",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kysect.BotFramework.ConsoleTest", "Kysect.BotFramework.ConsoleTest\Kysect.BotFramework.ConsoleTest.csproj", "{87502E17-4CA0-4804-B613-0106507B34D2}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kysect.BotFramework.Internal", "Kysect.BotFramework.Internal\Kysect.BotFramework.Internal.csproj", "{F3D60899-1759-4FFE-A103-645D97855745}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kysect.BotFramework.Analysis", "Kysect.BotFramework.Analysis\Kysect.BotFramework.Analysis.csproj", "{F3D60899-1759-4FFE-A103-645D97855745}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kysect.BotFramework.Abstractions", "Kysect.BotFramework.Abstractions\Kysect.BotFramework.Abstractions.csproj", "{981590BB-ECA0-4E26-A84C-F70D0B9E25E4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{F3D60899-1759-4FFE-A103-645D97855745}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F3D60899-1759-4FFE-A103-645D97855745}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F3D60899-1759-4FFE-A103-645D97855745}.Release|Any CPU.Build.0 = Release|Any CPU
+		{981590BB-ECA0-4E26-A84C-F70D0B9E25E4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{981590BB-ECA0-4E26-A84C-F70D0B9E25E4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{981590BB-ECA0-4E26-A84C-F70D0B9E25E4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{981590BB-ECA0-4E26-A84C-F70D0B9E25E4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
