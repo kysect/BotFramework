@@ -1,4 +1,6 @@
-﻿namespace Kysect.BotFramework.Settings
+﻿using Kysect.BotFramework.Abstactions.Settings;
+
+namespace Kysect.BotFramework.Settings
 {
     public class ConstSettingsProvider<TSettings> : ISettingsProvider<TSettings>
     {

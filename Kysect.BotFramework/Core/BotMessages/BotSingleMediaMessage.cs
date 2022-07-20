@@ -1,7 +1,8 @@
 ﻿using System.Threading.Tasks;
+using Kysect.BotFramework.Abstractions.BotMedia;
+using Kysect.BotFramework.Abstractions.BotMessages;
+using Kysect.BotFramework.Abstractions.Contexts;
 using Kysect.BotFramework.ApiProviders;
-using Kysect.BotFramework.Core.BotMedia;
-using Kysect.BotFramework.Core.Contexts;
 
 namespace Kysect.BotFramework.Core.BotMessages
 {
@@ -16,7 +17,7 @@ namespace Kysect.BotFramework.Core.BotMessages
             MediaFile = mediaFile;
         }
 
-        public async Task SendAsync(IBotApiProvider apiProvider, SenderInfo sender)
+        public async Task SendAsync(IBotApiProvider apiProvider, ISenderInfo sender)
         {
             await apiProvider.SendMediaAsync(MediaFile, Text, sender);
         }

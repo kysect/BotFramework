@@ -1,21 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
+using Kysect.BotFramework.Abstactions.Settings;
+using Kysect.BotFramework.Abstractions;
+using Kysect.BotFramework.Abstractions.BotMessages;
 using Kysect.BotFramework.Core;
 using Kysect.BotFramework.Core.BotMedia;
 using Kysect.BotFramework.Core.BotMessages;
-using Kysect.BotFramework.Core.Contexts;
-using Kysect.BotFramework.Core.Tools;
 using Kysect.BotFramework.Core.Tools.Loggers;
-using Kysect.BotFramework.DefaultCommands;
-using Kysect.BotFramework.Settings;
 using Telegram.Bot;
 using Telegram.Bot.Args;
-using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
-using File = System.IO.File;
 
 namespace Kysect.BotFramework.ApiProviders.Telegram
 {
@@ -31,7 +25,7 @@ namespace Kysect.BotFramework.ApiProviders.Telegram
             Initialize();
         }
 
-        public event EventHandler<BotEventArgs> OnMessage;
+        public event EventHandler<IBotEventArgs> OnMessage;
 
         public void Restart()
         {

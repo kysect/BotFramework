@@ -1,4 +1,7 @@
-﻿namespace Kysect.BotFramework.Core.BotMedia
+﻿using Kysect.BotFramework.Abstractions.BotMedia;
+using Kysect.BotFramework.Enums;
+
+namespace Kysect.BotFramework.Core.BotMedia
 {
     public class BotPhotoFile : IBotMediaFile
     {
@@ -7,7 +10,7 @@
             Path = path;
         }
 
-        public MediaTypeEnum MediaType => MediaTypeEnum.Photo;
+        public MediaType MediaType => MediaType.Photo;
         public string Path { get; }
     }
 }

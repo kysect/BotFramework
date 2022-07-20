@@ -2,16 +2,16 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Kysect.BotFramework.Core.BotMedia;
-using Kysect.BotFramework.Core.Contexts;
-using Kysect.BotFramework.Core.Tools;
+using Kysect.BotFramework.Abstractions.BotMedia;
+using Kysect.BotFramework.Abstractions.Contexts;
 using Kysect.BotFramework.Core.Tools.Loggers;
+using Kysect.BotFramework.Tools;
 
 namespace Kysect.BotFramework.ApiProviders.Discord;
 
 public partial class DiscordApiProvider
 {
-    public async Task<Result> SendMultipleMediaAsync(List<IBotMediaFile> mediaFiles, string text, SenderInfo sender)
+    public async Task<Result> SendMultipleMediaAsync(List<IBotMediaFile> mediaFiles, string text, ISenderInfo sender)
     {
         var result = await SendMediaAsync(mediaFiles.First(), text, sender);
 
@@ -28,7 +28,7 @@ public partial class DiscordApiProvider
         return result;
     }
 
-    public async Task<Result> SendMediaAsync(IBotMediaFile mediaFile, string text, SenderInfo sender)
+    public async Task<Result> SendMediaAsync(IBotMediaFile mediaFile, string text, ISenderInfo sender)
     {
         if (mediaFile is IBotOnlineFile onlineFile)
             return await SendOnlineMediaAsync(onlineFile, text, sender);
@@ -54,7 +54,7 @@ public partial class DiscordApiProvider
         }
     }
 
-    private async Task<Result> SendOnlineMediaAsync(IBotOnlineFile file, string text, SenderInfo sender)
+    private async Task<Result> SendOnlineMediaAsync(IBotOnlineFile file, string text, ISenderInfo sender)
     {
         if (text.Length != 0)
         {

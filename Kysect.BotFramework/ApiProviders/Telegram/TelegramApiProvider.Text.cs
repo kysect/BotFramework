@@ -1,21 +1,21 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Kysect.BotFramework.Core.Contexts;
-using Kysect.BotFramework.Core.Tools;
+using Kysect.BotFramework.Abstractions.Contexts;
 using Kysect.BotFramework.Core.Tools.Loggers;
+using Kysect.BotFramework.Tools;
 
 namespace Kysect.BotFramework.ApiProviders.Telegram;
 
 public partial class TelegramApiProvider
 {
-    public async Task<Result> SendTextMessageAsync(string text, SenderInfo sender)
+    public async Task<Result> SendTextMessageAsync(string text, ISenderInfo sender)
     {
         
 
         return await SendText(text, sender);
     }
 
-    private async Task<Result> SendText(string text, SenderInfo sender)
+    private async Task<Result> SendText(string text, ISenderInfo sender)
     {
         Result result = CheckText(text);
         if (result.IsFailed)

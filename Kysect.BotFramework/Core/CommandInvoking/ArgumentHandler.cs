@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
-using Kysect.BotFramework.Core.Commands;
-using Kysect.BotFramework.Core.Tools;
+using Kysect.BotFramework.Abstractions.Commands;
 using Kysect.BotFramework.Core.Tools.Extensions;
+using Kysect.BotFramework.Tools;
 
 namespace Kysect.BotFramework.Core.CommandInvoking;
 

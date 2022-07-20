@@ -5,17 +5,21 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using Kysect.BotFramework.Abstactions.Settings;
+using Kysect.BotFramework.Abstractions;
+using Kysect.BotFramework.Abstractions.BotMedia;
+using Kysect.BotFramework.Abstractions.BotMessages;
 using Kysect.BotFramework.Core;
 using Kysect.BotFramework.Core.BotMedia;
 using Kysect.BotFramework.Core.BotMessages;
 using Kysect.BotFramework.Core.Tools.Loggers;
-using Kysect.BotFramework.Settings;
+using Kysect.BotFramework.Enums;
 
 namespace Kysect.BotFramework.ApiProviders.Discord
 {
     public partial class DiscordApiProvider : IBotApiProvider, IDisposable
     {
-        private readonly object _lock = new object();
+        private readonly object _lock = new();
         private readonly DiscordSettings _settings;
         private DiscordSocketClient _client;
 
@@ -25,7 +29,7 @@ namespace Kysect.BotFramework.ApiProviders.Discord
             Initialize();
         }
 
-        public event EventHandler<BotEventArgs> OnMessage;
+        public event EventHandler<IBotEventArgs> OnMessage;
 
         public void Restart()
         {
@@ -112,29 +116,29 @@ namespace Kysect.BotFramework.ApiProviders.Discord
         {
             switch (ParseMediaType(filename))
             {
-                case MediaTypeEnum.Photo: return new BotOnlinePhotoFile(url);
-                case MediaTypeEnum.Video: return new BotOnlineVideoFile(url);
+                case MediaType.Photo: return new BotOnlinePhotoFile(url);
+                case MediaType.Video: return new BotOnlineVideoFile(url);
                 default:
                     LoggerHolder.Instance.Information($"Skipped file: {filename}");
                     return null;
             }
         }
 
-        private MediaTypeEnum ParseMediaType(string filename)
+        private MediaType ParseMediaType(string filename)
         {
             if (filename.EndsWith("png") || filename.EndsWith("jpg") ||
                 filename.EndsWith("bmp"))
             {
-                return MediaTypeEnum.Photo;
+                return MediaType.Photo;
             }
 
             if (filename.EndsWith("mp4") || filename.EndsWith("mov") ||
                 filename.EndsWith("wmv") || filename.EndsWith("avi"))
             {
-                return MediaTypeEnum.Video;
+                return MediaType.Video;
             }
 
-            return MediaTypeEnum.Undefined;
+            return MediaType.Undefined;
         }
 
         private bool CheckIsAdmin(SocketUser user)

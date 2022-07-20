@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Kysect.BotFramework.Core.BotMedia;
-using Kysect.BotFramework.Core.Contexts;
-using Kysect.BotFramework.Core.Tools;
+using Kysect.BotFramework.Abstractions.BotMedia;
+using Kysect.BotFramework.Abstractions.Contexts;
+using Kysect.BotFramework.Core.Tools.Extensions;
 using Kysect.BotFramework.Core.Tools.Loggers;
-using Kysect.BotFramework.Settings;
+using Kysect.BotFramework.Enums;
+using Kysect.BotFramework.Tools;
 using Telegram.Bot.Types;
 using File = System.IO.File;
 
@@ -15,7 +16,7 @@ namespace Kysect.BotFramework.ApiProviders.Telegram;
 
 public partial class TelegramApiProvider
 {
-    public async Task<Result> SendMultipleMediaAsync(List<IBotMediaFile> mediaFiles, string text, SenderInfo sender)
+    public async Task<Result> SendMultipleMediaAsync(List<IBotMediaFile> mediaFiles, string text, ISenderInfo sender)
     {
         var checkResult = CheckMediaFiles(mediaFiles);
         if (checkResult.IsFailed)
@@ -71,8 +72,8 @@ public partial class TelegramApiProvider
         {
             return mediaFile.MediaType switch
             {
-                MediaTypeEnum.Photo => new InputMediaPhoto(onlineFile.Id) {Caption = caption},
-                MediaTypeEnum.Video => new InputMediaVideo(onlineFile.Id) {Caption = caption}
+                MediaType.Photo => new InputMediaPhoto(onlineFile.Id) {Caption = caption},
+                MediaType.Video => new InputMediaVideo(onlineFile.Id) {Caption = caption}
             };
         }
         else
@@ -82,8 +83,8 @@ public partial class TelegramApiProvider
                 mediaFile.GetFileExtension());
             return mediaFile.MediaType switch
             {
-                MediaTypeEnum.Photo => new InputMediaPhoto(inputMedia) {Caption = caption},
-                MediaTypeEnum.Video => new InputMediaVideo(inputMedia) {Caption = caption}
+                MediaType.Photo => new InputMediaPhoto(inputMedia) {Caption = caption},
+                MediaType.Video => new InputMediaVideo(inputMedia) {Caption = caption}
             };
         }
     }
@@ -102,7 +103,7 @@ public partial class TelegramApiProvider
 
     }
 
-    public async Task<Result> SendMediaAsync(IBotMediaFile mediaFile, string text, SenderInfo sender)
+    public async Task<Result> SendMediaAsync(IBotMediaFile mediaFile, string text, ISenderInfo sender)
     {
         if (mediaFile is IBotOnlineFile onlineFile) 
             return await SendOnlineMediaAsync(onlineFile, text, sender);
@@ -118,9 +119,9 @@ public partial class TelegramApiProvider
 
         try
         {
-            if (mediaFile.MediaType == MediaTypeEnum.Photo)
+            if (mediaFile.MediaType == MediaType.Photo)
                 await _client.SendPhotoAsync(sender.ChatId, fileToSend, text);
-            else if (mediaFile.MediaType == MediaTypeEnum.Video)
+            else if (mediaFile.MediaType == MediaType.Video)
                 await _client.SendVideoAsync(sender.ChatId, fileToSend, caption: text);
 
             return Result.Ok();
@@ -137,7 +138,7 @@ public partial class TelegramApiProvider
         }
     }
 
-    public async Task<Result> SendOnlineMediaAsync(IBotOnlineFile file, string text, SenderInfo sender)
+    public async Task<Result> SendOnlineMediaAsync(IBotOnlineFile file, string text, ISenderInfo sender)
     {
         Result result = CheckText(text);
         if (result.IsFailed)
@@ -149,9 +150,9 @@ public partial class TelegramApiProvider
         
         try
         {
-            if (file.MediaType == MediaTypeEnum.Photo)
+            if (file.MediaType == MediaType.Photo)
                 await _client.SendPhotoAsync(sender.ChatId, fileIdentifier, text);
-            else if (file.MediaType == MediaTypeEnum.Video)
+            else if (file.MediaType == MediaType.Video)
                 await _client.SendVideoAsync(sender.ChatId, fileIdentifier, caption: text);
 
             return Result.Ok();

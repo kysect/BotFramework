@@ -1,22 +1,22 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Kysect.BotFramework.Core.BotMessages;
-using Kysect.BotFramework.Core.Commands;
-using Kysect.BotFramework.Core.Tools;
+using Kysect.BotFramework.Abstractions.BotMessages;
+using Kysect.BotFramework.Abstractions.Commands;
 using Kysect.BotFramework.Core.Tools.Extensions;
 using Kysect.BotFramework.Core.Tools.Loggers;
+using Kysect.BotFramework.Tools;
 
 namespace Kysect.BotFramework.Core.CommandInvoking
 {
     public class CommandHandler
     {
         private readonly IBotCommand _command;
-        private readonly CommandContainer _commandContainer;
+        private readonly ICommandContainer _commandContainer;
         private readonly List<string> _arguments;
 
         public CommandHandler(
             IBotCommand command,
-            CommandContainer commandContainer,
+            ICommandContainer commandContainer,
             List<string> arguments)
         {
             _command = command;

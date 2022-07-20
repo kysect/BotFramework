@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Kysect.BotFramework.Core.Contexts;
-using Kysect.BotFramework.Core.Tools;
+using Kysect.BotFramework.Abstractions.Contexts;
 using Kysect.BotFramework.Core.Tools.Loggers;
+using Kysect.BotFramework.Tools;
 
 namespace Kysect.BotFramework.ApiProviders.Discord;
 
 public partial class DiscordApiProvider
 {
-    public async Task<Result> SendTextMessageAsync(string text, SenderInfo sender)
+    public async Task<Result> SendTextMessageAsync(string text, ISenderInfo sender)
     {
         Result result = CheckText(text);
         if (result.IsFailed)
@@ -20,7 +20,7 @@ public partial class DiscordApiProvider
 
     }
     
-    private async Task<Result> SendTextAsync(string text, SenderInfo sender)
+    private async Task<Result> SendTextAsync(string text, ISenderInfo sender)
     {
         var discordSender = (DiscordSenderInfo)sender;
     

@@ -2,8 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
-using Kysect.BotFramework.Core.Commands;
+using Kysect.BotFramework.Abstractions.Commands;
 using Kysect.BotFramework.Core.Exceptions;
 using Microsoft.Extensions.DependencyInjection;
 

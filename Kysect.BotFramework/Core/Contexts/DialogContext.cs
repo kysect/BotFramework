@@ -1,18 +1,20 @@
 ﻿using System.Linq;
+using Kysect.BotFramework.Abstractions.Contexts;
 using Kysect.BotFramework.Data;
 using Kysect.BotFramework.Data.Entities;
 
 namespace Kysect.BotFramework.Core.Contexts
 {
-    public class DialogContext
+    public class DialogContext : IDialogContext
     {
         private readonly BotFrameworkDbContext _dbContext;
         
         private readonly long _senderInfoId;
+        private readonly ContextType _contextType;
 
         private int _state;
 
-        public SenderInfo SenderInfo { get; }
+        public ISenderInfo SenderInfo { get; }
 
         public int State
         {
@@ -24,11 +26,17 @@ namespace Kysect.BotFramework.Core.Contexts
             }
         }
 
-        public DialogContext(int state, long senderInfoId, SenderInfo senderInfo, BotFrameworkDbContext dbContext)
+        public DialogContext(
+            int state,
+            long senderInfoId,
+            SenderInfo senderInfo,
+            ContextType contextType,
+            BotFrameworkDbContext dbContext)
         {
             SenderInfo = senderInfo;
             _senderInfoId = senderInfoId;
             _state = state;
+            _contextType = contextType;
             _dbContext = dbContext;
         }
 
@@ -37,7 +45,7 @@ namespace Kysect.BotFramework.Core.Contexts
             DialogContextEntity context = _dbContext.DialogContexts.FirstOrDefault(
                 x =>
                     x.SenderInfoId == _senderInfoId
-                    && x.ContextType == SenderInfo.ContextType);
+                    && x.ContextType == _contextType);
 
             context!.State = State;
             _dbContext.DialogContexts.Update(context);
