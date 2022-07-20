@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<OutputType>Library</OutputType>
+		<TargetFramework>netstandard2.0</TargetFramework>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<Version>0.0.1</Version>
+		<Authors>Kysect</Authors>
+		<RootNamespace>Kysect.BotFramework</RootNamespace>
+		<AssemblyName>Kysect.BotFramework.Abstractions</AssemblyName>
+		<PackageLicenseExpression></PackageLicenseExpression>
+		<PackageLicenseFile></PackageLicenseFile>
+		<LangVersion>latest</LangVersion>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Company>Kysect</Company>
+		<EnableNETAnalyzers>true</EnableNETAnalyzers>
+		<RepositoryUrl>https://github.com/kysect/BotFramework</RepositoryUrl>
+		<PackageProjectUrl>https://github.com/kysect/BotFramework</PackageProjectUrl>
+	</PropertyGroup>
+
+</Project>
