@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using Kysect.BotFramework.Abstactions.Settings;
 using Newtonsoft.Json;
 
 namespace Kysect.BotFramework.Settings

@@ -1,23 +1,24 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Kysect.BotFramework.Core.BotMedia;
-using Kysect.BotFramework.Core.Contexts;
+using Kysect.BotFramework.Abstractions.BotMedia;
+using Kysect.BotFramework.Abstractions.Commands;
+using Kysect.BotFramework.Abstractions.Contexts;
 
 namespace Kysect.BotFramework.Core.Commands
 {
-    public class CommandContainer
+    public class CommandContainer : ICommandContainer
     {
         private readonly List<string> _arguments;
 
         public string CommandName { get; private set; }
         public List<IBotMediaFile> MediaFiles { get; }
-        public SenderInfo SenderInfo { get; }
+        public ISenderInfo SenderInfo { get; }
 
         public CommandContainer(
             string commandName,
             List<string> arguments,
             List<IBotMediaFile> mediaFiles,
-            SenderInfo senderInfo) 
+            ISenderInfo senderInfo) 
         {
             CommandName = commandName;
             _arguments = arguments;
@@ -27,7 +28,7 @@ namespace Kysect.BotFramework.Core.Commands
 
         public bool StartsWithPrefix(char prefix) => prefix == '\0' || CommandName.FirstOrDefault() == prefix;
 
-        public CommandContainer RemovePrefix(char prefix)
+        public ICommandContainer RemovePrefix(char prefix)
         {
             if (CommandName.FirstOrDefault() == prefix)
             {

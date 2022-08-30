@@ -1,8 +1,8 @@
-﻿using System.IO;
+﻿using Kysect.BotFramework.Abstractions.BotMedia;
+using System.IO;
 using System.Linq;
-using Kysect.BotFramework.Core.BotMedia;
 
-namespace Kysect.BotFramework.Settings;
+namespace Kysect.BotFramework.Core.Tools.Extensions;
 
 public static class MediaFileExtensions
 {

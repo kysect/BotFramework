@@ -1,4 +1,5 @@
-﻿using Kysect.BotFramework.Core.Contexts;
+﻿using Kysect.BotFramework.Abstractions.Contexts;
+using Kysect.BotFramework.Core.Contexts;
 using Kysect.BotFramework.Data;
 using Kysect.BotFramework.Data.Entities;
 
@@ -22,12 +23,12 @@ namespace Kysect.BotFramework.ApiProviders.Telegram
             return entity;
         }
 
-        internal override DialogContext GetOrCreateDialogContext(BotFrameworkDbContext dbContext)
+        internal override IDialogContext GetOrCreateDialogContext(BotFrameworkDbContext dbContext)
         {
             var contextSenderInfo = TelegramSenderInfoEntity.GetOrCreate(this, dbContext);
             var contextModel = DialogContextEntity.GetOrCreate(contextSenderInfo, ContextType, dbContext);
             
-            return new DialogContext(contextModel.State, contextModel.SenderInfoId, this, dbContext);
+            return new DialogContext(contextModel.State, contextModel.SenderInfoId, this, ContextType, dbContext);
         }
     }
 }

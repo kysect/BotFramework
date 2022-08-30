@@ -1,0 +1,43 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+	<OutputType>Library</OutputType>
+	<TargetFramework>netstandard2.0</TargetFramework>
+	<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+	<Version>0.0.1</Version>
+	<Authors>Kysect</Authors>
+	<RootNamespace>Kysect.BotFramework</RootNamespace>
+	<AssemblyName>Kysect.BotFramework.Analysis</AssemblyName>
+	<PackageLicenseExpression></PackageLicenseExpression>
+	<PackageLicenseFile></PackageLicenseFile>
+	<LangVersion>latest</LangVersion>
+	<Nullable>enable</Nullable>
+	<ImplicitUsings>enable</ImplicitUsings>
+	<Company>Kysect</Company>
+	<EnableNETAnalyzers>true</EnableNETAnalyzers>
+	<RepositoryUrl>https://github.com/kysect/BotFramework</RepositoryUrl>
+	<PackageProjectUrl>https://github.com/kysect/BotFramework</PackageProjectUrl>
+  </PropertyGroup>
+
+	
+  <ItemGroup>
+	<ProjectReference Include="..\Kysect.BotFramework.Abstractions\Kysect.BotFramework.Abstractions.csproj" />
+  </ItemGroup>
+
+	
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.3" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.2.0" />
+  </ItemGroup>
+
+	
+  <ItemGroup>
+    <None Update="tools\*.ps1" CopyToOutputDirectory="PreserveNewest" Pack="true" PackagePath="" />
+  </ItemGroup>
+
+	
+  <ItemGroup>
+    <Folder Include="CodeFixes\" />
+  </ItemGroup>
+
+</Project>

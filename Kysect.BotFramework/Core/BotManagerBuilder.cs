@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Reflection;
 using FluentScanning;
+using Kysect.BotFramework.Abstactions.Services;
+using Kysect.BotFramework.Abstractions.Commands;
 using Kysect.BotFramework.ApiProviders;
-using Kysect.BotFramework.Core.Commands;
+using Kysect.BotFramework.Attributes;
 using Kysect.BotFramework.Core.Contexts.Providers;
 using Kysect.BotFramework.Core.Exceptions;
 using Kysect.BotFramework.Core.Tools;

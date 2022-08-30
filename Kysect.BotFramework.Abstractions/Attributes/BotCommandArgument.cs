@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Kysect.BotFramework.Core.Commands;
+﻿namespace Kysect.BotFramework.Attributes;
 
 [AttributeUsage(AttributeTargets.Property)]
 public class BotCommandArgumentAttribute : Attribute

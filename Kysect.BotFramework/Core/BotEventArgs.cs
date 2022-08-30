@@ -1,17 +1,19 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Kysect.BotFramework.Core.BotMedia;
+using Kysect.BotFramework.Abstractions;
+using Kysect.BotFramework.Abstractions.BotMedia;
+using Kysect.BotFramework.Abstractions.BotMessages;
+using Kysect.BotFramework.Abstractions.Contexts;
 using Kysect.BotFramework.Core.BotMessages;
-using Kysect.BotFramework.Core.Contexts;
 
 namespace Kysect.BotFramework.Core;
 
-public class BotEventArgs
+public class BotEventArgs : IBotEventArgs
 {
     public IBotMessage Message { get; }
-    public SenderInfo SenderInfo { get; }
+    public ISenderInfo SenderInfo { get; }
 
-    public BotEventArgs(IBotMessage message, SenderInfo senderInfo)
+    public BotEventArgs(IBotMessage message, ISenderInfo senderInfo)
     {
         Message = message;
         SenderInfo = senderInfo;

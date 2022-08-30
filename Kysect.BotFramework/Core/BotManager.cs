@@ -1,13 +1,16 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Kysect.BotFramework.Abstractions;
+using Kysect.BotFramework.Abstractions.BotMessages;
+using Kysect.BotFramework.Abstractions.CommandInvoking;
+using Kysect.BotFramework.Abstractions.Commands;
 using Kysect.BotFramework.ApiProviders;
 using Kysect.BotFramework.Core.BotMessages;
 using Kysect.BotFramework.Core.CommandInvoking;
-using Kysect.BotFramework.Core.Commands;
 using Kysect.BotFramework.Core.Exceptions;
-using Kysect.BotFramework.Core.Tools;
 using Kysect.BotFramework.Core.Tools.Extensions;
 using Kysect.BotFramework.Core.Tools.Loggers;
+using Kysect.BotFramework.Tools;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Kysect.BotFramework.Core
@@ -39,14 +42,14 @@ namespace Kysect.BotFramework.Core
             _apiProvider.OnMessage += ApiProviderOnMessage;
         }
 
-        private void ApiProviderOnMessage(object sender, BotEventArgs e)
+        private void ApiProviderOnMessage(object sender, IBotEventArgs e)
         {
 #pragma warning disable CS4014
             RunCommandProcessing(e);
 #pragma warning restore CS4014
         }
 
-        private async Task RunCommandProcessing(BotEventArgs e)
+        private async Task RunCommandProcessing(IBotEventArgs e)
         {
             try
             {
@@ -65,11 +68,11 @@ namespace Kysect.BotFramework.Core
             }
         }
 
-        private async Task ProcessMessage(BotEventArgs e)
+        private async Task ProcessMessage(IBotEventArgs e)
         {
             using var scope = _serviceProvider.CreateScope();
             
-            CommandContainer commandContainer = _commandParser.ParseCommand(e);
+            ICommandContainer commandContainer = _commandParser.ParseCommand(e);
 
             if (!commandContainer.StartsWithPrefix(_prefix))
             {
@@ -98,7 +101,7 @@ namespace Kysect.BotFramework.Core
             await message.SendAsync(_apiProvider, e.SenderInfo);
         }
 
-        private async Task HandlerError(BotException exception, BotEventArgs botEventArgs)
+        private async Task HandlerError(BotException exception, IBotEventArgs botEventArgs)
         {
             LoggerHolder.Instance.Error(exception.Message);
 

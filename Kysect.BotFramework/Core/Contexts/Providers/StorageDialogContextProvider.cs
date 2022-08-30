@@ -1,4 +1,6 @@
-﻿using Kysect.BotFramework.Data;
+﻿using Kysect.BotFramework.Abstactions.Services;
+using Kysect.BotFramework.Abstractions.Contexts;
+using Kysect.BotFramework.Data;
 
 namespace Kysect.BotFramework.Core.Contexts.Providers;
 
@@ -9,6 +11,6 @@ public class StorageDialogContextProvider : IDialogContextProvider
     public StorageDialogContextProvider(BotFrameworkDbContext dbContext)
         => _dbContext = dbContext;
 
-    public DialogContext GetDialogContext(SenderInfo senderInfo)
-        => senderInfo.GetOrCreateDialogContext(_dbContext);
+    public IDialogContext GetDialogContext(ISenderInfo senderInfo)
+        => (senderInfo as SenderInfo).GetOrCreateDialogContext(_dbContext);
 }
