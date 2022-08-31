@@ -1,4 +1,5 @@
-﻿using Kysect.BotFramework.Abstractions.Contexts;
+﻿using System;
+using Kysect.BotFramework.Abstractions.Contexts;
 using Kysect.BotFramework.Abstractions.Visitors;
 
 namespace Kysect.BotFramework.ApiProviders.Discord;
@@ -25,5 +26,10 @@ public class DiscordSenderInfo : IDiscordSenderInfo
     public ulong GuildId { get; }
 
     public TContext Accept<TContext>(IContextVisitor<TContext> visitor)
-        => visitor.Visit(this);
+    {
+        if (visitor is null)
+            throw new ArgumentNullException(nameof(visitor));
+
+        return visitor.Visit(this);
+    }
 }

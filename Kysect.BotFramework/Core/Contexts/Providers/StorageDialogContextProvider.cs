@@ -1,4 +1,5 @@
-﻿using Kysect.BotFramework.Abstactions.Services;
+﻿using System;
+using Kysect.BotFramework.Abstactions.Services;
 using Kysect.BotFramework.Abstractions.Contexts;
 using Kysect.BotFramework.Abstractions.Visitors;
 
@@ -14,5 +15,10 @@ public class StorageDialogContextProvider : IDialogContextProvider
     }
 
     public IDialogContext GetDialogContext(ISenderInfo senderInfo)
-        => senderInfo.Accept(_dialogContextVisitor);
+    {
+        if (senderInfo is null)
+            throw new ArgumentNullException(nameof(senderInfo));
+
+        return senderInfo.Accept(_dialogContextVisitor);
+    }
 }

@@ -1,5 +1,6 @@
 ﻿using Kysect.BotFramework.Abstractions.Contexts;
 using Kysect.BotFramework.Abstractions.Visitors;
+using System;
 
 namespace Kysect.BotFramework.ApiProviders.Telegram;
 
@@ -22,5 +23,10 @@ public class TelegramSenderInfo : ITelegramSenderInfo
     public bool IsAdmin { get; }
 
     public TContext Accept<TContext>(IContextVisitor<TContext> visitor)
-        => visitor.Visit(this);
+    {
+        if (visitor is null)
+            throw new ArgumentNullException(nameof(visitor));
+        
+        return visitor.Visit(this);
+    }
 }
