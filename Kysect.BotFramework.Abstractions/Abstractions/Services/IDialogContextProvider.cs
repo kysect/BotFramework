@@ -4,5 +4,5 @@ namespace Kysect.BotFramework.Abstactions.Services;
 
 public interface IDialogContextProvider
 {
-    public IDialogContext GetDialogContext(ISenderInfo senderInfo);
+    IDialogContext GetDialogContext(ISenderInfo senderInfo);
 }
