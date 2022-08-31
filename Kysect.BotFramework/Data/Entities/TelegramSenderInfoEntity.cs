@@ -1,11 +1,11 @@
 ﻿using System.Linq;
-using Kysect.BotFramework.ApiProviders.Telegram;
+using Kysect.BotFramework.Abstractions.Contexts;
 
 namespace Kysect.BotFramework.Data.Entities
 {
     public class TelegramSenderInfoEntity : SenderInfoEntity
     {
-        public static TelegramSenderInfoEntity GetOrCreate(TelegramSenderInfo senderInfo, BotFrameworkDbContext dbContext)
+        public static TelegramSenderInfoEntity GetOrCreate(ITelegramSenderInfo senderInfo, BotFrameworkDbContext dbContext)
         {
             var senderInfoEntity = dbContext.TelegramSenderInfos.FirstOrDefault(
                 si => 
