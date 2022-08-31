@@ -1,5 +1,4 @@
-﻿using System;
-using Kysect.BotFramework.Abstractions.Contexts;
+﻿using Kysect.BotFramework.Abstractions.Contexts;
 using Kysect.BotFramework.Abstractions.Visitors;
 
 namespace Kysect.BotFramework.ApiProviders.Telegram;
