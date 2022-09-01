@@ -9,5 +9,5 @@ public interface ISenderInfo
     string UserSenderUsername { get; }
     bool IsAdmin { get; }
 
-    TContext Accept<TContext>(IContextVisitor<TContext> visitor);
+    TContext Accept<TContext>(ISenderInfoVisitor<TContext> visitor);
 }

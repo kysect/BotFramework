@@ -7,11 +7,11 @@ namespace Kysect.BotFramework.Core.Contexts.Providers;
 
 public class StorageDialogContextProvider : IDialogContextProvider
 {
-    private readonly IContextVisitor<IDialogContext> _dialogContextVisitor;
+    private readonly ISenderInfoVisitor<IDialogContext> _dialogSenderInfoVisitor;
 
-    public StorageDialogContextProvider(IContextVisitor<IDialogContext> dialogContextVisitor)
+    public StorageDialogContextProvider(ISenderInfoVisitor<IDialogContext> dialogSenderInfoVisitor)
     {
-        _dialogContextVisitor = dialogContextVisitor;
+        _dialogSenderInfoVisitor = dialogSenderInfoVisitor;
     }
 
     public IDialogContext GetDialogContext(ISenderInfo senderInfo)
@@ -19,6 +19,6 @@ public class StorageDialogContextProvider : IDialogContextProvider
         if (senderInfo is null)
             throw new ArgumentNullException(nameof(senderInfo));
 
-        return senderInfo.Accept(_dialogContextVisitor);
+        return senderInfo.Accept(_dialogSenderInfoVisitor);
     }
 }

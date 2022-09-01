@@ -99,7 +99,7 @@ namespace Kysect.BotFramework.Core
             ServiceCollection
                 .AddDbContext<BotFrameworkDbContext>(optionsAction)
                 .AddScoped<IDialogContextProvider, StorageDialogContextProvider>()
-                .AddScoped<IContextVisitor<IDialogContext>, DialogContextVisitor>();
+                .AddScoped<ISenderInfoVisitor<IDialogContext>, DialogSenderInfoVisitor>();
 
             return this;
         }

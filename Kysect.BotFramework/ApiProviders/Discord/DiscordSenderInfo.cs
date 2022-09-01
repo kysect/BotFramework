@@ -25,7 +25,7 @@ public class DiscordSenderInfo : IDiscordSenderInfo
 
     public ulong GuildId { get; }
 
-    public TContext Accept<TContext>(IContextVisitor<TContext> visitor)
+    public TContext Accept<TContext>(ISenderInfoVisitor<TContext> visitor)
     {
         if (visitor is null)
             throw new ArgumentNullException(nameof(visitor));

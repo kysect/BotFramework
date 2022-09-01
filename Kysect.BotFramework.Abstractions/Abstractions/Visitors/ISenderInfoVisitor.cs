@@ -2,7 +2,7 @@
 
 namespace Kysect.BotFramework.Abstractions.Visitors;
 
-public interface IContextVisitor<out TContext>
+public interface ISenderInfoVisitor<out TContext>
 {
     TContext Visit(IDiscordSenderInfo senderInfo);
 

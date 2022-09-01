@@ -6,11 +6,11 @@ using Kysect.BotFramework.Data.Entities;
 
 namespace Kysect.BotFramework.Core.Visitors;
 
-public class DialogContextVisitor : IContextVisitor<IDialogContext>
+public class DialogSenderInfoVisitor : ISenderInfoVisitor<IDialogContext>
 {
     private readonly BotFrameworkDbContext _dbContext;
 
-    public DialogContextVisitor(BotFrameworkDbContext dbContext)
+    public DialogSenderInfoVisitor(BotFrameworkDbContext dbContext)
     {
         _dbContext = dbContext;
     }
