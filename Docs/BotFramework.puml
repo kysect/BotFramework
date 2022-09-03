@@ -1,0 +1,26 @@
+@startuml Modules
+
+package Framework {
+    package BF.Abstractions
+    package BF.Analyzer
+    package BF.Core
+}
+
+package Plugins {
+    package BF.Providers.Telegram
+    package BF.Providers.Discord
+}
+
+BF.Analyzer --> BF.Abstractions
+BF.Core --> BF.Abstractions
+BF.Core --> BF.Analyzer
+
+BF.Providers.Telegram --> BF.Abstractions
+BF.Providers.Discord --> BF.Abstractions
+
+package Bot
+
+Bot --> BF.Core
+Bot --> BF.Providers.Telegram
+
+@enduml

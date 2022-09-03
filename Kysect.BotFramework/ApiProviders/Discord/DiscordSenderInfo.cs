@@ -1,39 +1,35 @@
-﻿using Kysect.BotFramework.Abstractions.Contexts;
-using Kysect.BotFramework.Core.Contexts;
-using Kysect.BotFramework.Data;
-using Kysect.BotFramework.Data.Entities;
+﻿using System;
+using Kysect.BotFramework.Abstractions.Contexts;
+using Kysect.BotFramework.Abstractions.Visitors;
 
-namespace Kysect.BotFramework.ApiProviders.Discord
+namespace Kysect.BotFramework.ApiProviders.Discord;
+
+public class DiscordSenderInfo : IDiscordSenderInfo
 {
-    public class DiscordSenderInfo : SenderInfo
+    public DiscordSenderInfo(long chatId, long userSenderId, string userSenderUsername, bool isAdmin, ulong guildId)
     {
-        public ulong GuildId { get; }
+        GuildId = guildId;
+        ChatId = chatId;
+        UserSenderId = userSenderId;
+        UserSenderUsername = userSenderUsername;
+        IsAdmin = isAdmin;
+    }
 
-        internal override ContextType ContextType => ContextType.Discord;
+    public long ChatId { get; }
 
-        public DiscordSenderInfo(long chatId, long userSenderId, string userSenderUsername, bool isAdmin, ulong guildId)
-            : base(chatId, userSenderId, userSenderUsername, isAdmin)
-        {
-            GuildId = guildId;
-        }
+    public long UserSenderId { get; }
 
-        private DiscordSenderInfoEntity ToEntity()
-        {
-            var entity = new DiscordSenderInfoEntity
-            {
-                GuildId = GuildId,
-                ChatId = ChatId,
-                UserSenderId = UserSenderId
-            };
-            return entity;
-        }
+    public string UserSenderUsername { get; }
 
-        internal override IDialogContext GetOrCreateDialogContext(BotFrameworkDbContext dbContext)
-        {
-            var contextSenderInfo = DiscordSenderInfoEntity.GetOrCreate(this, dbContext);
-            var contextModel = DialogContextEntity.GetOrCreate(contextSenderInfo, ContextType, dbContext);
-            
-            return new DialogContext(contextModel.State, contextModel.SenderInfoId, this, ContextType, dbContext);
-        }
+    public bool IsAdmin { get; }
+
+    public ulong GuildId { get; }
+
+    public TContext Accept<TContext>(ISenderInfoVisitor<TContext> visitor)
+    {
+        if (visitor is null)
+            throw new ArgumentNullException(nameof(visitor));
+
+        return visitor.Visit(this);
     }
 }

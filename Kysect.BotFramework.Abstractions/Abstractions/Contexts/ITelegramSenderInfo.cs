@@ -1,6 +1,5 @@
 ﻿namespace Kysect.BotFramework.Abstractions.Contexts;
 
-public interface IDialogContext
+public interface ITelegramSenderInfo : ISenderInfo
 {
-    int State { get; set; }
 }

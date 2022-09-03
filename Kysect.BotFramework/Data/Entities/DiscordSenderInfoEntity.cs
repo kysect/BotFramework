@@ -1,5 +1,5 @@
 ﻿using System.Linq;
-using Kysect.BotFramework.ApiProviders.Discord;
+using Kysect.BotFramework.Abstractions.Contexts;
 
 namespace Kysect.BotFramework.Data.Entities
 {
@@ -7,7 +7,7 @@ namespace Kysect.BotFramework.Data.Entities
     {
         public ulong GuildId { get; set; }
 
-        public static DiscordSenderInfoEntity GetOrCreate(DiscordSenderInfo senderInfo, BotFrameworkDbContext dbContext)
+        public static DiscordSenderInfoEntity GetOrCreate(IDiscordSenderInfo senderInfo, BotFrameworkDbContext dbContext)
         {
             var senderInfoEntity = dbContext.DiscordSenderInfos.FirstOrDefault(
                 si =>

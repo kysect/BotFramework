@@ -1,34 +1,32 @@
 ﻿using Kysect.BotFramework.Abstractions.Contexts;
-using Kysect.BotFramework.Core.Contexts;
-using Kysect.BotFramework.Data;
-using Kysect.BotFramework.Data.Entities;
+using Kysect.BotFramework.Abstractions.Visitors;
+using System;
 
-namespace Kysect.BotFramework.ApiProviders.Telegram
+namespace Kysect.BotFramework.ApiProviders.Telegram;
+
+public class TelegramSenderInfo : ITelegramSenderInfo
 {
-    public class TelegramSenderInfo : SenderInfo
+    public TelegramSenderInfo(long chatId, long userSenderId, string userSenderUsername, bool isAdmin)
     {
-        internal override ContextType ContextType => ContextType.Telegram;
+        ChatId = chatId;
+        UserSenderId = userSenderId;
+        UserSenderUsername = userSenderUsername;
+        IsAdmin = isAdmin;
+    }
 
-        public TelegramSenderInfo(long chatId, long userSenderId, string userSenderUsername, bool isAdmin)
-            : base(chatId, userSenderId, userSenderUsername, isAdmin)
-        { }
+    public long ChatId { get; }
+
+    public long UserSenderId { get; }
+
+    public string UserSenderUsername { get; }
+
+    public bool IsAdmin { get; }
+
+    public TContext Accept<TContext>(ISenderInfoVisitor<TContext> visitor)
+    {
+        if (visitor is null)
+            throw new ArgumentNullException(nameof(visitor));
         
-        private TelegramSenderInfoEntity ToEntity()
-        {
-            var entity = new TelegramSenderInfoEntity()
-            {
-                ChatId = ChatId,
-                UserSenderId = UserSenderId
-            };
-            return entity;
-        }
-
-        internal override IDialogContext GetOrCreateDialogContext(BotFrameworkDbContext dbContext)
-        {
-            var contextSenderInfo = TelegramSenderInfoEntity.GetOrCreate(this, dbContext);
-            var contextModel = DialogContextEntity.GetOrCreate(contextSenderInfo, ContextType, dbContext);
-            
-            return new DialogContext(contextModel.State, contextModel.SenderInfoId, this, ContextType, dbContext);
-        }
+        return visitor.Visit(this);
     }
 }

@@ -4,6 +4,8 @@ using System.Reflection;
 using FluentScanning;
 using Kysect.BotFramework.Abstactions.Services;
 using Kysect.BotFramework.Abstractions.Commands;
+using Kysect.BotFramework.Abstractions.Contexts;
+using Kysect.BotFramework.Abstractions.Visitors;
 using Kysect.BotFramework.ApiProviders;
 using Kysect.BotFramework.Attributes;
 using Kysect.BotFramework.Core.Contexts.Providers;
@@ -11,6 +13,7 @@ using Kysect.BotFramework.Core.Exceptions;
 using Kysect.BotFramework.Core.Tools;
 using Kysect.BotFramework.Core.Tools.Extensions;
 using Kysect.BotFramework.Core.Tools.Loggers;
+using Kysect.BotFramework.Core.Visitors;
 using Kysect.BotFramework.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -95,7 +98,8 @@ namespace Kysect.BotFramework.Core
         {
             ServiceCollection
                 .AddDbContext<BotFrameworkDbContext>(optionsAction)
-                .AddScoped<IDialogContextProvider, StorageDialogContextProvider>();
+                .AddScoped<IDialogContextProvider, StorageDialogContextProvider>()
+                .AddScoped<ISenderInfoVisitor<IDialogContext>, DialogSenderInfoVisitor>();
 
             return this;
         }
